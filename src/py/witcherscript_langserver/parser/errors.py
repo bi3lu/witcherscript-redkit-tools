@@ -1,4 +1,4 @@
-"""Parser and lexer errors."""
+"""Diagnostic models shared by the lexer and parser."""
 
 from dataclasses import dataclass
 
