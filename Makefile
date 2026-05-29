@@ -1,4 +1,4 @@
-.PHONY: sync lint format test test-py test-dotnet
+.PHONY: sync lint format test test-py test-dotnet docker-build docker-shell docker-lint docker-test
 
 sync:
 	uv sync --all-extras --dev
@@ -20,3 +20,15 @@ test-py:
 
 test-dotnet:
 	dotnet test src/dotnet/WitcherScript.RedkitTooling.sln
+
+docker-build:
+	docker compose build dev
+
+docker-shell:
+	docker compose run --rm dev
+
+docker-lint:
+	docker compose run --rm dev make lint
+
+docker-test:
+	docker compose run --rm dev make test

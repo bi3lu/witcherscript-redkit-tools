@@ -59,6 +59,17 @@ make test
 make lint
 ```
 
+## Containers
+
+The repository includes Docker and VS Code Dev Container support for a consistent Python/.NET toolchain on macOS and Windows:
+
+```bash
+docker compose build dev
+docker compose run --rm dev make test
+```
+
+See [docs/containers.md](docs/containers.md) for details. REDkit and The Witcher 3 should still be installed and launched natively on the Windows host.
+
 ## Architecture
 
 ```text
