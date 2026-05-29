@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from pathlib import Path
 from typing import cast
 
 from lsprotocol import types
@@ -15,6 +16,7 @@ def test_server_registers_minimal_lsp_features() -> None:
     assert types.TEXT_DOCUMENT_DID_OPEN in features
     assert types.TEXT_DOCUMENT_DID_CHANGE in features
     assert types.TEXT_DOCUMENT_DID_SAVE in features
+    assert types.WORKSPACE_DID_CHANGE_WATCHED_FILES in features
 
 
 def test_initialize_and_initialized_update_server_state() -> None:
@@ -32,6 +34,30 @@ def test_initialize_and_initialized_update_server_state() -> None:
 
     assert server.workspace_root_uri == root_uri
     assert server.initialized
+
+
+def test_initialize_loads_workspace_index(tmp_path: Path) -> None:
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "player.ws").write_text("class Player {}", encoding="utf-8")
+    (tmp_path / "witcherscript.toml").write_text(
+        '[project]\nname = "LspFixture"\n\n[scripts]\nsource_roots = ["scripts"]\n',
+        encoding="utf-8",
+    )
+    server = create_server()
+
+    _feature(server, types.INITIALIZE)(
+        types.InitializeParams(
+            capabilities=types.ClientCapabilities(),
+            process_id=123,
+            root_uri=tmp_path.as_uri(),
+        )
+    )
+
+    assert server.workspace_root_uri == tmp_path.as_uri()
+    assert server.workspace_state.config is not None
+    assert server.workspace_state.config.project.name == "LspFixture"
+    assert len(server.workspace_state.index.files) == 1
 
 
 def test_did_open_caches_document_and_publishes_diagnostics() -> None:
@@ -89,6 +115,45 @@ def test_did_save_uses_saved_text_when_available() -> None:
     assert server.document_text(uri) == 'class Player { var title : string = "oops\n}'
     assert len(published) == 1
     assert [diagnostic.code for diagnostic in published[0].diagnostics] == ["WS1002", "WS2001"]
+
+
+def test_watched_file_changes_refresh_workspace_index(tmp_path: Path) -> None:
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    player = scripts / "player.ws"
+    player.write_text("class Player {}", encoding="utf-8")
+    (tmp_path / "witcherscript.toml").write_text(
+        '[scripts]\nsource_roots = ["scripts"]\n',
+        encoding="utf-8",
+    )
+    server = create_server()
+    _feature(server, types.INITIALIZE)(
+        types.InitializeParams(
+            capabilities=types.ClientCapabilities(),
+            process_id=123,
+            root_uri=tmp_path.as_uri(),
+        )
+    )
+
+    player.write_text("class Updated {}", encoding="utf-8")
+    _feature(server, types.WORKSPACE_DID_CHANGE_WATCHED_FILES)(
+        types.DidChangeWatchedFilesParams(
+            changes=[types.FileEvent(uri=player.as_uri(), type=types.FileChangeType.Changed)]
+        )
+    )
+
+    assert [symbol.name for symbol in server.workspace_state.index.files[player].symbols] == [
+        "Updated"
+    ]
+
+    player.unlink()
+    _feature(server, types.WORKSPACE_DID_CHANGE_WATCHED_FILES)(
+        types.DidChangeWatchedFilesParams(
+            changes=[types.FileEvent(uri=player.as_uri(), type=types.FileChangeType.Deleted)]
+        )
+    )
+
+    assert player not in server.workspace_state.index.files
 
 
 def _capture_published_diagnostics(

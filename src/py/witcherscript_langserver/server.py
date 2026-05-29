@@ -1,10 +1,13 @@
 """Language server entrypoint."""
 
+from pathlib import Path
+
 from lsprotocol import types
 from pygls.lsp.server import LanguageServer
 
 from witcherscript_langserver import __version__
 from witcherscript_langserver.diagnostics import collect_diagnostics
+from witcherscript_langserver.workspace import WorkspaceState
 
 
 class WitcherScriptLanguageServer(LanguageServer):
@@ -12,6 +15,7 @@ class WitcherScriptLanguageServer(LanguageServer):
 
     Attributes:
         documents: In-memory document cache keyed by document URI.
+        workspace_state: Workspace configuration and project index state.
         workspace_root_uri: Root URI received during LSP initialization.
         initialized: Whether the client has sent the initialized notification.
     """
@@ -24,6 +28,7 @@ class WitcherScriptLanguageServer(LanguageServer):
         )
 
         self.documents: dict[str, str] = {}
+        self.workspace_state = WorkspaceState()
         self.workspace_root_uri: str | None = None
         self.initialized = False
 
@@ -74,7 +79,9 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
             ls: Active WitcherScript language server instance.
             params: Client initialization parameters.
         """
-        ls.workspace_root_uri = params.root_uri
+        root_uri = _root_uri_from_initialize(params)
+        ls.workspace_root_uri = root_uri
+        ls.workspace_state.initialize(root_uri)
 
     @server.feature(types.INITIALIZED)
     def initialized(ls: WitcherScriptLanguageServer, params: types.InitializedParams) -> None:
@@ -97,6 +104,7 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
         """
         document = params.text_document
         ls.cache_document(document.uri, document.text)
+        ls.workspace_state.update_file(document.uri, document.text)
         publish_diagnostics(ls, document.uri, document.text)
 
     @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
@@ -113,6 +121,7 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
         uri = params.text_document.uri
         text = _text_from_change(params)
         ls.cache_document(uri, text)
+        ls.workspace_state.update_file(uri, text)
         publish_diagnostics(ls, uri, text)
 
     @server.feature(types.TEXT_DOCUMENT_DID_SAVE, types.SaveOptions(include_text=True))
@@ -126,7 +135,26 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
         uri = params.text_document.uri
         text = params.text if params.text is not None else ls.document_text(uri)
         ls.cache_document(uri, text)
+        ls.workspace_state.update_file(uri, text)
         publish_diagnostics(ls, uri, text)
+
+    @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
+    def did_change_watched_files(
+        ls: WitcherScriptLanguageServer,
+        params: types.DidChangeWatchedFilesParams,
+    ) -> None:
+        """Refresh project index entries changed outside the editor.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Watched file change notification parameters.
+        """
+        for change in params.changes:
+            if change.type == types.FileChangeType.Deleted:
+                ls.workspace_state.remove_file(change.uri)
+
+            else:
+                ls.workspace_state.refresh_file(change.uri)
 
 
 def publish_diagnostics(ls: WitcherScriptLanguageServer, uri: str, text: str) -> None:
@@ -159,6 +187,27 @@ def _text_from_change(params: types.DidChangeTextDocumentParams) -> str:
         return ""
 
     return params.content_changes[-1].text
+
+
+def _root_uri_from_initialize(params: types.InitializeParams) -> str | None:
+    """Extract the best workspace root URI from initialization parameters.
+
+    Args:
+        params: Client initialization parameters.
+
+    Returns:
+        Root URI from modern or legacy initialize parameters, when available.
+    """
+    if params.root_uri is not None:
+        return str(params.root_uri)
+
+    if params.workspace_folders:
+        return str(params.workspace_folders[0].uri)
+
+    if params.root_path:
+        return Path(params.root_path).expanduser().resolve().as_uri()
+
+    return None
 
 
 def main() -> None:
