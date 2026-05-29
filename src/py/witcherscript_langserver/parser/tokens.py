@@ -64,6 +64,29 @@ class TokenKind(StrEnum):
     TRUE = "TRUE"
     FALSE = "FALSE"
     NONE = "NONE"
+    EXEC = "EXEC"
+    LATENT = "LATENT"
+    TIMER = "TIMER"
+    STORYSCENE = "STORYSCENE"
+    QUEST = "QUEST"
+    REWARD = "REWARD"
+    CLEANUP = "CLEANUP"
+    ENTRY = "ENTRY"
+    STATEMACHINE = "STATEMACHINE"
+    IN = "IN"
+    OPTIONAL = "OPTIONAL"
+    FINAL = "FINAL"
+    AUTO = "AUTO"
+    NATIVE = "NATIVE"
+    ABSTRACT = "ABSTRACT"
+    PRIVATE = "PRIVATE"
+    PROTECTED = "PROTECTED"
+    PUBLIC = "PUBLIC"
+    OUT = "OUT"
+    ENUM = "ENUM"
+    SUPER = "SUPER"
+    PARENT = "PARENT"
+    NULL = "NULL"
 
     LEFT_PAREN = "LEFT_PAREN"
     RIGHT_PAREN = "RIGHT_PAREN"
@@ -129,6 +152,29 @@ KEYWORDS: dict[str, TokenKind] = {
     "true": TokenKind.TRUE,
     "false": TokenKind.FALSE,
     "none": TokenKind.NONE,
+    "exec": TokenKind.EXEC,
+    "latent": TokenKind.LATENT,
+    "timer": TokenKind.TIMER,
+    "storyscene": TokenKind.STORYSCENE,
+    "quest": TokenKind.QUEST,
+    "reward": TokenKind.REWARD,
+    "cleanup": TokenKind.CLEANUP,
+    "entry": TokenKind.ENTRY,
+    "statemachine": TokenKind.STATEMACHINE,
+    "in": TokenKind.IN,
+    "optional": TokenKind.OPTIONAL,
+    "final": TokenKind.FINAL,
+    "auto": TokenKind.AUTO,
+    "native": TokenKind.NATIVE,
+    "abstract": TokenKind.ABSTRACT,
+    "private": TokenKind.PRIVATE,
+    "protected": TokenKind.PROTECTED,
+    "public": TokenKind.PUBLIC,
+    "out": TokenKind.OUT,
+    "enum": TokenKind.ENUM,
+    "super": TokenKind.SUPER,
+    "parent": TokenKind.PARENT,
+    "NULL": TokenKind.NULL,
 }
 
 

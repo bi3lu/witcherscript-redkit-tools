@@ -21,6 +21,12 @@ def test_invalid_lexer_errors_snapshot() -> None:
     )
 
 
+def test_language_guide_features_snapshot() -> None:
+    assert _lex_snapshot("samples/scripts/valid/language_guide_features.ws") == _load_snapshot(
+        "language_guide_features.json"
+    )
+
+
 def test_lexer_tracks_token_ranges() -> None:
     result = tokenize("class Example\n{\n}\n")
     class_token = result.tokens[0]
