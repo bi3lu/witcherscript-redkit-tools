@@ -3,7 +3,7 @@ from pathlib import Path
 from witcherscript_langserver.analysis.symbol_table import SymbolKind
 from witcherscript_langserver.config import load_workspace_config
 from witcherscript_langserver.indexing.project_index import ProjectIndex, scan_script_files
-from witcherscript_langserver.workspace import WorkspaceState, path_from_uri
+from witcherscript_langserver.workspace import WorkspaceState, normalize_file_uri, path_from_uri
 
 
 def test_load_workspace_config_resolves_toml_paths(tmp_path: Path) -> None:
@@ -75,7 +75,9 @@ def test_path_from_uri_handles_local_file_uri(tmp_path: Path) -> None:
     path = tmp_path / "scripts" / "player.ws"
 
     assert path_from_uri(path.as_uri()) == path
+    assert normalize_file_uri(path.as_uri()) == path.resolve().as_uri()
     assert path_from_uri("untitled:Scratch.ws") is None
+    assert normalize_file_uri("untitled:Scratch.ws") == "untitled:Scratch.ws"
 
 
 def _write_workspace(root: Path) -> dict[str, Path]:
