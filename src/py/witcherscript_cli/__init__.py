@@ -1,0 +1,1 @@
+"""WitcherScript developer CLI package."""
