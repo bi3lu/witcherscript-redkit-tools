@@ -297,10 +297,14 @@ def publish_diagnostics(ls: WitcherScriptLanguageServer, uri: str, text: str) ->
         uri: LSP document URI.
         text: Full document text to analyze.
     """
+    normalized_uri = normalize_file_uri(uri)
     ls.text_document_publish_diagnostics(
         types.PublishDiagnosticsParams(
             uri=uri,
-            diagnostics=collect_diagnostics(text),
+            diagnostics=collect_diagnostics(
+                text,
+                ls.workspace_state.index.semantic_diagnostics.for_file(normalized_uri),
+            ),
         )
     )
 

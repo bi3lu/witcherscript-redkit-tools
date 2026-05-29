@@ -88,6 +88,24 @@ def test_did_open_caches_document_and_publishes_diagnostics() -> None:
     assert [diagnostic.code for diagnostic in published[0].diagnostics] == ["WS2002"]
 
 
+def test_did_open_publishes_semantic_diagnostics(tmp_path: Path) -> None:
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    player = scripts / "player.ws"
+    source = "class Player extends MissingBase {}"
+    player.write_text(source, encoding="utf-8")
+    (tmp_path / "witcherscript.toml").write_text(
+        '[scripts]\nsource_roots = ["scripts"]\n',
+        encoding="utf-8",
+    )
+    server = _initialized_server(tmp_path)
+    published = _capture_published_diagnostics(server)
+
+    _open_document(server, player, source)
+
+    assert [diagnostic.code for diagnostic in published[0].diagnostics] == ["WS3003"]
+
+
 def test_did_change_updates_document_and_republishes_diagnostics() -> None:
     server = create_server()
     published = _capture_published_diagnostics(server)
