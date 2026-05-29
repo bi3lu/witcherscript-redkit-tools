@@ -6,8 +6,14 @@ from lsprotocol import types
 from pygls.lsp.server import LanguageServer
 
 from witcherscript_langserver import __version__
+from witcherscript_langserver.completion import completions
+from witcherscript_langserver.definition import definition
 from witcherscript_langserver.diagnostics import collect_diagnostics
-from witcherscript_langserver.workspace import WorkspaceState
+from witcherscript_langserver.hover import hover
+from witcherscript_langserver.indexing.file_index import FileIndex
+from witcherscript_langserver.references import references
+from witcherscript_langserver.symbols import document_symbols, workspace_symbols
+from witcherscript_langserver.workspace import WorkspaceState, normalize_file_uri
 
 
 class WitcherScriptLanguageServer(LanguageServer):
@@ -40,6 +46,9 @@ class WitcherScriptLanguageServer(LanguageServer):
             text: Full document text to cache.
         """
         self.documents[uri] = text
+        normalized_uri = normalize_file_uri(uri)
+        if normalized_uri != uri:
+            self.documents[normalized_uri] = text
 
     def document_text(self, uri: str) -> str:
         """Return cached text for a document URI.
@@ -50,7 +59,7 @@ class WitcherScriptLanguageServer(LanguageServer):
         Returns:
             Cached document text, or an empty string when the document is unknown.
         """
-        return self.documents.get(uri, "")
+        return self.documents.get(uri, self.documents.get(normalize_file_uri(uri), ""))
 
 
 def create_server() -> WitcherScriptLanguageServer:
@@ -156,6 +165,129 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
             else:
                 ls.workspace_state.refresh_file(change.uri)
 
+    @server.feature(types.TEXT_DOCUMENT_DOCUMENT_SYMBOL)
+    def document_symbol(
+        ls: WitcherScriptLanguageServer,
+        params: types.DocumentSymbolParams,
+    ) -> list[types.DocumentSymbol]:
+        """Return outline symbols for a document.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Document symbol request parameters.
+
+        Returns:
+            Hierarchical document symbols.
+        """
+        file_index = _indexed_file(ls, params.text_document.uri)
+        if file_index is None:
+            return []
+
+        return document_symbols(file_index)
+
+    @server.feature(types.WORKSPACE_SYMBOL)
+    def workspace_symbol(
+        ls: WitcherScriptLanguageServer,
+        params: types.WorkspaceSymbolParams,
+    ) -> list[types.WorkspaceSymbol]:
+        """Return project-wide symbols matching a query.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Workspace symbol request parameters.
+
+        Returns:
+            Matching workspace symbols.
+        """
+        return workspace_symbols(ls.workspace_state.index, params.query)
+
+    @server.feature(types.TEXT_DOCUMENT_DEFINITION)
+    def goto_definition(
+        ls: WitcherScriptLanguageServer,
+        params: types.DefinitionParams,
+    ) -> types.Location | None:
+        """Return the definition for the symbol under the cursor.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Definition request parameters.
+
+        Returns:
+            Definition location, when resolved.
+        """
+        uri = params.text_document.uri
+        normalized_uri = normalize_file_uri(uri)
+        return definition(
+            ls.workspace_state.index,
+            ls.document_text(uri),
+            normalized_uri,
+            params.position,
+        )
+
+    @server.feature(types.TEXT_DOCUMENT_COMPLETION)
+    def completion(
+        ls: WitcherScriptLanguageServer,
+        params: types.CompletionParams,
+    ) -> types.CompletionList:
+        """Return keyword and project symbol completions.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Completion request parameters.
+
+        Returns:
+            Completion list.
+        """
+        return completions(ls.workspace_state.index, normalize_file_uri(params.text_document.uri))
+
+    @server.feature(types.TEXT_DOCUMENT_HOVER)
+    def hover_info(
+        ls: WitcherScriptLanguageServer,
+        params: types.HoverParams,
+    ) -> types.Hover | None:
+        """Return hover information for the symbol under the cursor.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Hover request parameters.
+
+        Returns:
+            Hover information, when resolved.
+        """
+        uri = params.text_document.uri
+        normalized_uri = normalize_file_uri(uri)
+        return hover(
+            ls.workspace_state.index,
+            ls.document_text(uri),
+            normalized_uri,
+            params.position,
+        )
+
+    @server.feature(types.TEXT_DOCUMENT_REFERENCES)
+    def find_references(
+        ls: WitcherScriptLanguageServer,
+        params: types.ReferenceParams,
+    ) -> list[types.Location]:
+        """Return simple references for the symbol under the cursor.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Reference request parameters.
+
+        Returns:
+            Reference locations.
+        """
+        uri = params.text_document.uri
+        normalized_uri = normalize_file_uri(uri)
+        return references(
+            ls.workspace_state.index,
+            ls.documents,
+            ls.document_text(uri),
+            normalized_uri,
+            params.position,
+            params.context.include_declaration,
+        )
+
 
 def publish_diagnostics(ls: WitcherScriptLanguageServer, uri: str, text: str) -> None:
     """Publish diagnostics for a document.
@@ -208,6 +340,19 @@ def _root_uri_from_initialize(params: types.InitializeParams) -> str | None:
         return Path(params.root_path).expanduser().resolve().as_uri()
 
     return None
+
+
+def _indexed_file(ls: WitcherScriptLanguageServer, uri: str) -> FileIndex | None:
+    normalized_uri = normalize_file_uri(uri)
+    for file_index in ls.workspace_state.index.files.values():
+        if file_index.uri == normalized_uri:
+            return file_index
+
+    text = ls.document_text(uri)
+    if not text:
+        return None
+
+    return ls.workspace_state.update_file(uri, text)
 
 
 def main() -> None:
