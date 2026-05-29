@@ -1,0 +1,98 @@
+{
+  "tokens": [
+    {
+      "kind": "CLASS",
+      "lexeme": "class"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "BrokenLexer"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "VAR",
+      "lexeme": "var"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "text"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "string"
+    },
+    {
+      "kind": "EQUAL",
+      "lexeme": "="
+    },
+    {
+      "kind": "STRING",
+      "lexeme": "\"unterminated"
+    },
+    {
+      "kind": "VAR",
+      "lexeme": "var"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "value"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "int"
+    },
+    {
+      "kind": "EQUAL",
+      "lexeme": "="
+    },
+    {
+      "kind": "NUMBER",
+      "lexeme": "10"
+    },
+    {
+      "kind": "UNKNOWN",
+      "lexeme": "~"
+    },
+    {
+      "kind": "NUMBER",
+      "lexeme": "2"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "BLOCK_COMMENT",
+      "lexeme": "/* missing end\n}\n"
+    },
+    {
+      "kind": "EOF",
+      "lexeme": ""
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "WS1002",
+      "message": "Unterminated string literal."
+    },
+    {
+      "code": "WS1000",
+      "message": "Unexpected character '~'."
+    },
+    {
+      "code": "WS1003",
+      "message": "Unterminated block comment."
+    }
+  ]
+}
