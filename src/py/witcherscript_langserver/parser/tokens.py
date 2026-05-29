@@ -1,4 +1,4 @@
-"""Token models."""
+"""Token and source range models used by the WitcherScript parser."""
 
 from dataclasses import dataclass
 from enum import StrEnum

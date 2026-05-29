@@ -1,4 +1,4 @@
-"""Parser implementation."""
+"""Tolerant recursive-descent parser for WitcherScript source files."""
 
 from dataclasses import dataclass
 
@@ -20,7 +20,12 @@ from witcherscript_langserver.parser.tokens import SourceRange, Token, TokenKind
 
 @dataclass(frozen=True)
 class ParseResult:
-    """Result of parsing a WitcherScript source file."""
+    """Result of parsing a WitcherScript source file.
+
+    Attributes:
+        module: Parsed module tree.
+        diagnostics: Recoverable diagnostics gathered for this parse.
+    """
 
     module: Module
     diagnostics: list[SyntaxDiagnostic]
@@ -80,7 +85,12 @@ DECLARATION_STARTS = {
 
 
 class Parser:
-    """Parse WitcherScript tokens into a tolerant structural AST."""
+    """Parse WitcherScript tokens into a tolerant structural AST.
+
+    The parser focuses on declarations and statement boundaries first. It keeps
+    enough structure for diagnostics and symbol indexing while recovering from
+    incomplete code that appears during normal editing.
+    """
 
     def __init__(self, tokens: list[Token]) -> None:
         """Initialize the parser.

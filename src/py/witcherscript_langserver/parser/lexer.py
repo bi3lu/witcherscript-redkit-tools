@@ -1,4 +1,4 @@
-"""Lexer implementation."""
+"""Lexer implementation for WitcherScript source files."""
 
 from dataclasses import dataclass
 from typing import ClassVar
@@ -27,7 +27,11 @@ class LexResult:
 
 
 class Lexer:
-    """Tokenize WitcherScript source text."""
+    """Tokenize WitcherScript source text.
+
+    The lexer is intentionally recoverable: malformed strings, comments, and
+    unknown characters produce diagnostics while tokenization continues.
+    """
 
     _SINGLE_CHARACTER_TOKENS: ClassVar[dict[str, TokenKind]] = {
         "(": TokenKind.LEFT_PAREN,
