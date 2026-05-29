@@ -124,3 +124,20 @@ def path_from_uri(uri: str) -> Path | None:
         path = path[1:]
 
     return Path(path).expanduser().resolve()
+
+
+def normalize_file_uri(uri: str) -> str:
+    """Normalize a local file URI through the filesystem path resolver.
+
+    Args:
+        uri: LSP document URI.
+
+    Returns:
+        Normalized file URI for local files, or the original URI otherwise.
+    """
+    path = path_from_uri(uri)
+    
+    if path is None:
+        return uri
+
+    return path.as_uri()
