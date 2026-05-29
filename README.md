@@ -1,39 +1,79 @@
 # WitcherScript REDkit Tools
 
-Developer tooling for WitcherScript and REDkit projects.
+Developer tooling for WitcherScript projects used with The Witcher 3 REDkit.
 
-The project starts with two reusable foundations:
+The repository contains a Python language server for WitcherScript and a C# REDkit tooling foundation. The language server provides editor-facing language intelligence through the Language Server Protocol, while the C# project keeps Windows and REDkit-specific project data in a strongly typed model.
 
-- **WitcherScript Language Server** written in Python.
-- **REDkit Project Tooling CLI** written in C#.
+## Capabilities
 
-The goal is to build a solid language and project core first, then reuse it from VS Code, a custom IDE, other LSP-capable editors, and standalone CLI workflows.
+The WitcherScript language server currently supports:
 
-## Status
+- lexical and parser diagnostics for `.ws` files
+- project configuration through `witcherscript.toml`
+- workspace scanning with `source_roots`, `vanilla_roots`, and `exclude` rules
+- per-file and project-wide symbol indexes
+- document symbols for editor outlines
+- workspace symbol search
+- go to definition for indexed symbols
+- hover text for known symbols
+- keyword and project-symbol completion
+- simple reference lookup across indexed files
+- file watching updates through `workspace/didChangeWatchedFiles`
 
-Early foundation work. The repository currently contains project structure, quality tooling, CI configuration, and minimal smoke tests.
+The REDkit tooling project contains:
 
-## Roadmap
+- a typed REDkit project model
+- content repository modeling
+- a CLI entry point with version reporting
+- .NET build and test integration
 
-- `v0.1`: repository foundation, lexer model, parser skeleton, parse CLI.
-- `v0.2`: minimal LSP with diagnostics and document symbols.
-- `v0.3`: workspace config, project index, go to definition.
-- `v0.4`: completion and hover MVP.
-- `v0.5`: REDkit tooling MVP for detect/init/validate.
+## Repository Layout
+
+```text
+.
+├─ docs/                         Project documentation
+├─ samples/                      WitcherScript samples and workspace fixtures
+├─ src/
+│  ├─ py/                        Python language server and developer CLI
+│  └─ dotnet/                    C# REDkit tooling solution
+├─ tests/py/                     Python tests and snapshots
+├─ Dockerfile                    Development container image
+├─ docker-compose.yml            Container workflow
+├─ Makefile                      Common local commands
+├─ pyproject.toml                Python package and tooling configuration
+└─ uv.lock                       Locked Python dependencies
+```
 
 ## Requirements
 
 - Python 3.12
 - [uv](https://docs.astral.sh/uv/)
-- .NET 10 SDK for C# 14
+- .NET SDK matching `global.json`
+- Docker, when using the container workflow
 
-## Local Development
+REDkit and The Witcher 3 are Windows-native tools. The language server and tests run on macOS, Linux, and Windows; REDkit process integration runs against native Windows installations.
+
+## Setup
 
 Install Python dependencies:
 
 ```bash
-uv sync
+uv sync --all-extras --dev
 ```
+
+Restore the .NET solution:
+
+```bash
+dotnet restore src/dotnet/WitcherScript.RedkitTooling.sln
+```
+
+Or run both through the project shortcut:
+
+```bash
+make sync
+```
+
+## Quality Checks
 
 Run Python checks:
 
@@ -47,45 +87,90 @@ uv run pytest
 Run .NET checks:
 
 ```bash
-dotnet restore src/dotnet/WitcherScript.RedkitTooling.sln
-dotnet build src/dotnet/WitcherScript.RedkitTooling.sln --configuration Release --no-restore
-dotnet test src/dotnet/WitcherScript.RedkitTooling.sln --configuration Release --no-build
+dotnet test src/dotnet/WitcherScript.RedkitTooling.sln
 ```
 
-Or use the Makefile shortcuts:
+Run the combined shortcuts:
 
 ```bash
-make test
 make lint
+make test
 ```
 
-## Containers
+## Running The Language Server
 
-The repository includes Docker and VS Code Dev Container support for a consistent Python/.NET toolchain on macOS and Windows:
+Start the language server over standard input and output:
+
+```bash
+uv run witcherscript-lsp
+```
+
+The server is designed to be launched by an LSP client. It reads the workspace root from `initialize`, loads `witcherscript.toml` when present, indexes configured `.ws` files, and responds to standard LSP requests.
+
+## Workspace Configuration
+
+Place `witcherscript.toml` at the workspace root:
+
+```toml
+[project]
+name = "MyRedkitMod"
+
+[redkit]
+game_directory = "D:/Steam/steamapps/common/The Witcher 3"
+redkit_directory = "D:/Steam/steamapps/common/The Witcher 3 REDkit"
+project_directory = "D:/REDkitProjects/MyMod"
+
+[scripts]
+source_roots = [
+  "scripts",
+  "content/scripts",
+  "Mods/modMyMod/content/scripts"
+]
+
+vanilla_roots = [
+  "D:/Steam/steamapps/common/The Witcher 3/content/content0/scripts"
+]
+
+exclude = [
+  "**/bin/**",
+  "**/.cache/**",
+  "**/.ws-cache/**",
+  "**/generated/**"
+]
+```
+
+Relative paths are resolved from the workspace root. Absolute paths are used as written. If no config file exists, the language server uses the workspace root as the script root and applies the default exclude rules.
+
+## Docker Workflow
+
+Build the development image:
 
 ```bash
 docker compose build dev
+```
+
+Run tests inside the container:
+
+```bash
 docker compose run --rm dev make test
 ```
 
-See [docs/containers.md](docs/containers.md) for details. REDkit and The Witcher 3 should still be installed and launched natively on the Windows host.
+Open an interactive shell:
 
-## Architecture
-
-```text
-VS Code / custom IDE / other LSP client
-        |
-WitcherScript Language Server
-        |
-Parser + Analyzer + Project Index
-        |
-REDkit project config
-        |
-C# REDkit Tooling CLI
-        |
-Game / REDkit / project folders
+```bash
+docker compose run --rm dev
 ```
 
-Python owns language intelligence: parsing, diagnostics, symbols, completion, hover, definitions, and indexing.
+See [docs/containers.md](docs/containers.md) for details about volumes, Dev Containers, and Windows path mounts.
 
-C# owns REDkit integration: installation detection, project detection, path validation, config export, external process execution, and later game/tool launch workflows.
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Language Server Features](docs/lsp-features.md)
+- [REDkit Project Model](docs/redkit-project-model.md)
+- [WitcherScript Notes](docs/witcherscript-notes.md)
+- [Containers](docs/containers.md)
+
+## License
+
+This project is licensed under the terms of the repository license.

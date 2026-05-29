@@ -136,7 +136,7 @@ def normalize_file_uri(uri: str) -> str:
         Normalized file URI for local files, or the original URI otherwise.
     """
     path = path_from_uri(uri)
-    
+
     if path is None:
         return uri
 
