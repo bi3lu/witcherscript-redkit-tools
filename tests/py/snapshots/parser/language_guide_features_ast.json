@@ -1,0 +1,223 @@
+{
+  "module": {
+    "imports": [],
+    "declarations": [
+      {
+        "kind": "ClassDecl",
+        "name": "W3WitchesCage",
+        "base_name": "CEntity",
+        "flags": [
+          "statemachine"
+        ],
+        "members": [
+          {
+            "kind": "VarDecl",
+            "name": "autoState",
+            "type_name": null,
+            "flags": [
+              "default"
+            ],
+            "has_initializer": true
+          }
+        ]
+      },
+      {
+        "kind": "StateDecl",
+        "name": "TurnedOn",
+        "parent_name": "W3WitchesCage",
+        "members": [
+          {
+            "kind": "FunctionDecl",
+            "name": "OnEnterState",
+            "flags": [
+              "event"
+            ],
+            "params": [
+              {
+                "name": "prevStateName",
+                "type_name": "name",
+                "flags": []
+              }
+            ],
+            "return_type": null,
+            "has_body": true,
+            "locals": [],
+            "statements": [
+              {
+                "kind": "expression",
+                "has_expression": false
+              },
+              {
+                "kind": "expression",
+                "has_expression": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "FunctionDecl",
+        "name": "acquire",
+        "flags": [
+          "exec"
+        ],
+        "params": [
+          {
+            "name": "skillName",
+            "type_name": "name",
+            "flags": []
+          }
+        ],
+        "return_type": null,
+        "has_body": true,
+        "locals": [
+          {
+            "kind": "VarDecl",
+            "name": "skills",
+            "type_name": "array < int >",
+            "flags": [],
+            "has_initializer": false
+          }
+        ],
+        "statements": [
+          {
+            "kind": "var",
+            "has_expression": false
+          },
+          {
+            "kind": "expression",
+            "has_expression": false
+          }
+        ]
+      },
+      {
+        "kind": "FunctionDecl",
+        "name": "ShaveGeralt",
+        "flags": [
+          "latent",
+          "storyscene"
+        ],
+        "params": [
+          {
+            "name": "player",
+            "type_name": "CStoryScenePlayer",
+            "flags": []
+          }
+        ],
+        "return_type": null,
+        "has_body": true,
+        "locals": [],
+        "statements": [
+          {
+            "kind": "expression",
+            "has_expression": false
+          }
+        ]
+      },
+      {
+        "kind": "FunctionDecl",
+        "name": "Loop",
+        "flags": [
+          "timer"
+        ],
+        "params": [
+          {
+            "name": "dt",
+            "type_name": "float",
+            "flags": []
+          },
+          {
+            "name": "id",
+            "type_name": "int",
+            "flags": []
+          }
+        ],
+        "return_type": null,
+        "has_body": true,
+        "locals": [],
+        "statements": [
+          {
+            "kind": "expression",
+            "has_expression": false
+          }
+        ]
+      },
+      {
+        "kind": "FunctionDecl",
+        "name": "LaunchCredits",
+        "flags": [
+          "quest"
+        ],
+        "params": [],
+        "return_type": null,
+        "has_body": true,
+        "locals": [],
+        "statements": [
+          {
+            "kind": "expression",
+            "has_expression": false
+          }
+        ]
+      },
+      {
+        "kind": "FunctionDecl",
+        "name": "ThrowProjectileCleanup",
+        "flags": [
+          "cleanup"
+        ],
+        "params": [],
+        "return_type": null,
+        "has_body": true,
+        "locals": [],
+        "statements": [
+          {
+            "kind": "if",
+            "has_expression": true
+          }
+        ]
+      },
+      {
+        "kind": "ClassDecl",
+        "name": "CScriptableState",
+        "base_name": "IScriptable",
+        "flags": [
+          "import"
+        ],
+        "members": [
+          {
+            "kind": "FunctionDecl",
+            "name": "AddTimer",
+            "flags": [
+              "import",
+              "final"
+            ],
+            "params": [
+              {
+                "name": "timerName",
+                "type_name": "name",
+                "flags": []
+              },
+              {
+                "name": "period",
+                "type_name": "float",
+                "flags": []
+              },
+              {
+                "name": "repeats",
+                "type_name": "bool",
+                "flags": [
+                  "optional"
+                ]
+              }
+            ],
+            "return_type": "int",
+            "has_body": false,
+            "locals": [],
+            "statements": []
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostics": []
+}

@@ -1,0 +1,56 @@
+{
+  "module": {
+    "imports": [
+      {
+        "kind": "ImportDecl",
+        "target": "\"game/scripts/player.ws\""
+      }
+    ],
+    "declarations": [
+      {
+        "kind": "ClassDecl",
+        "name": "PlayerSample",
+        "base_name": "Actor",
+        "flags": [],
+        "members": [
+          {
+            "kind": "VarDecl",
+            "name": "health",
+            "type_name": "float",
+            "flags": [],
+            "has_initializer": true
+          },
+          {
+            "kind": "VarDecl",
+            "name": "name",
+            "type_name": "string",
+            "flags": [],
+            "has_initializer": true
+          },
+          {
+            "kind": "FunctionDecl",
+            "name": "Heal",
+            "flags": [],
+            "params": [
+              {
+                "name": "amount",
+                "type_name": "int",
+                "flags": []
+              }
+            ],
+            "return_type": "void",
+            "has_body": true,
+            "locals": [],
+            "statements": [
+              {
+                "kind": "if",
+                "has_expression": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostics": []
+}
