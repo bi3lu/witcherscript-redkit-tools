@@ -24,7 +24,10 @@ The REDkit tooling project contains:
 
 - a typed REDkit project model
 - content repository modeling
-- a CLI entry point with version reporting
+- project, game, and REDkit directory detection
+- `witcherscript.toml` export for the language server
+- validation of project and script paths
+- command adapters for script recompilation and game launch
 - .NET build and test integration
 
 ## Repository Layout
