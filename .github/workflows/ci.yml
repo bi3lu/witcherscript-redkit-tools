@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    name: Python
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Ruff check
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Mypy
+        run: uv run mypy src/py
+
+      - name: Pytest
+        run: uv run pytest --cov=src/py
+
+  dotnet:
+    name: .NET
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: src/dotnet
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore WitcherScript.RedkitTooling.sln
+
+      - name: Build
+        run: dotnet build WitcherScript.RedkitTooling.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test WitcherScript.RedkitTooling.sln --configuration Release --no-build --verbosity normal

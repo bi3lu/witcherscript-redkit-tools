@@ -1,0 +1,7 @@
+[project]
+name = "MinimalProject"
+
+[scripts]
+source_roots = ["scripts"]
+vanilla_roots = []
+exclude = ["**/bin/**", "**/.cache/**"]

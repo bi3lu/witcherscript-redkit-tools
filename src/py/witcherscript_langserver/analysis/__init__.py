@@ -1,0 +1,1 @@
+"""WitcherScript analysis package."""

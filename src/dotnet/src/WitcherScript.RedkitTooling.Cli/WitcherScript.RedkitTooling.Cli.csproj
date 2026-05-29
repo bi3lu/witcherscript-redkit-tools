@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WitcherScript.RedkitTooling\WitcherScript.RedkitTooling.csproj" />
+  </ItemGroup>
+</Project>
