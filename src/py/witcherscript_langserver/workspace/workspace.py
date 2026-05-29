@@ -6,9 +6,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-from witcherscript_langserver.config import WorkspaceConfig, load_workspace_config
 from witcherscript_langserver.indexing.file_index import FileIndex
 from witcherscript_langserver.indexing.project_index import ProjectIndex
+
+from .config import WorkspaceConfig, load_workspace_config
 
 
 @dataclass
