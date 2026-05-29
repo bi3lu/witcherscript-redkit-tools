@@ -1,0 +1,225 @@
+{
+  "tokens": [
+    {
+      "kind": "IMPORT",
+      "lexeme": "import"
+    },
+    {
+      "kind": "STRING",
+      "lexeme": "\"game/scripts/player.ws\""
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "CLASS",
+      "lexeme": "class"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "PlayerSample"
+    },
+    {
+      "kind": "EXTENDS",
+      "lexeme": "extends"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "Actor"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "LINE_COMMENT",
+      "lexeme": "// Line comment"
+    },
+    {
+      "kind": "VAR",
+      "lexeme": "var"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "health"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "float"
+    },
+    {
+      "kind": "EQUAL",
+      "lexeme": "="
+    },
+    {
+      "kind": "NUMBER",
+      "lexeme": "100.0f"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "VAR",
+      "lexeme": "var"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "name"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "string"
+    },
+    {
+      "kind": "EQUAL",
+      "lexeme": "="
+    },
+    {
+      "kind": "STRING",
+      "lexeme": "\"Geralt \\\"White Wolf\\\"\""
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "BLOCK_COMMENT",
+      "lexeme": "/* Block\n       comment */"
+    },
+    {
+      "kind": "FUNCTION",
+      "lexeme": "function"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "Heal"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "amount"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "int"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "void"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "IF",
+      "lexeme": "if"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "amount"
+    },
+    {
+      "kind": "GREATER_EQUAL",
+      "lexeme": ">="
+    },
+    {
+      "kind": "NUMBER",
+      "lexeme": "0"
+    },
+    {
+      "kind": "AMPERSAND_AMPERSAND",
+      "lexeme": "&&"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "health"
+    },
+    {
+      "kind": "LESS",
+      "lexeme": "<"
+    },
+    {
+      "kind": "NUMBER",
+      "lexeme": "100.0"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "health"
+    },
+    {
+      "kind": "PLUS_EQUAL",
+      "lexeme": "+="
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "amount"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "RETURN",
+      "lexeme": "return"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "EOF",
+      "lexeme": ""
+    }
+  ],
+  "diagnostics": []
+}
