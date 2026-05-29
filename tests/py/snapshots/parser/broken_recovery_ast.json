@@ -1,0 +1,42 @@
+{
+  "module": {
+    "imports": [],
+    "declarations": [
+      {
+        "kind": "ClassDecl",
+        "name": "Broken",
+        "base_name": null,
+        "flags": [],
+        "members": [
+          {
+            "kind": "VarDecl",
+            "name": "x",
+            "type_name": "int",
+            "flags": [],
+            "has_initializer": false
+          },
+          {
+            "kind": "FunctionDecl",
+            "name": "ok",
+            "flags": [],
+            "params": [],
+            "return_type": null,
+            "has_body": true,
+            "locals": [],
+            "statements": []
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "WS2001",
+      "message": "Expected ';' after variable declaration."
+    },
+    {
+      "code": "WS2002",
+      "message": "Expected closing '}'."
+    }
+  ]
+}

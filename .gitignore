@@ -1,0 +1,35 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# uv
+# Commit uv.lock for reproducible builds.
+
+# .NET
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+
+# IDE
+.vscode/
+.idea/
+.vs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project cache
+.ws-cache/
+.redkit-cache/

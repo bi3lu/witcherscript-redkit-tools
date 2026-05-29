@@ -1,0 +1,689 @@
+{
+  "tokens": [
+    {
+      "kind": "STATEMACHINE",
+      "lexeme": "statemachine"
+    },
+    {
+      "kind": "CLASS",
+      "lexeme": "class"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "W3WitchesCage"
+    },
+    {
+      "kind": "EXTENDS",
+      "lexeme": "extends"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "CEntity"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "DEFAULT",
+      "lexeme": "default"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "autoState"
+    },
+    {
+      "kind": "EQUAL",
+      "lexeme": "="
+    },
+    {
+      "kind": "STRING",
+      "lexeme": "'TurnedOff'"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "STATE",
+      "lexeme": "state"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "TurnedOn"
+    },
+    {
+      "kind": "IN",
+      "lexeme": "in"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "W3WitchesCage"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "EVENT",
+      "lexeme": "event"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "OnEnterState"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "prevStateName"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "name"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "SUPER",
+      "lexeme": "super"
+    },
+    {
+      "kind": "DOT",
+      "lexeme": "."
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "OnEnterState"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "prevStateName"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "PARENT",
+      "lexeme": "parent"
+    },
+    {
+      "kind": "DOT",
+      "lexeme": "."
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "ApplyAppearance"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "STRING",
+      "lexeme": "\"roots_on\""
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "EXEC",
+      "lexeme": "exec"
+    },
+    {
+      "kind": "FUNCTION",
+      "lexeme": "function"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "acquire"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "skillName"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "name"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "VAR",
+      "lexeme": "var"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "skills"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "array"
+    },
+    {
+      "kind": "LESS",
+      "lexeme": "<"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "int"
+    },
+    {
+      "kind": "GREATER",
+      "lexeme": ">"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "thePlayer"
+    },
+    {
+      "kind": "DOT",
+      "lexeme": "."
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "DisplayHudMessage"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "STRING",
+      "lexeme": "'Hello'"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "LATENT",
+      "lexeme": "latent"
+    },
+    {
+      "kind": "STORYSCENE",
+      "lexeme": "storyscene"
+    },
+    {
+      "kind": "FUNCTION",
+      "lexeme": "function"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "ShaveGeralt"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "player"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "CStoryScenePlayer"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "Sleep"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "NUMBER",
+      "lexeme": "1.0f"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "TIMER",
+      "lexeme": "timer"
+    },
+    {
+      "kind": "FUNCTION",
+      "lexeme": "function"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "Loop"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "dt"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "float"
+    },
+    {
+      "kind": "COMMA",
+      "lexeme": ","
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "id"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "int"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "LoopFunction"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "dt"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "QUEST",
+      "lexeme": "quest"
+    },
+    {
+      "kind": "FUNCTION",
+      "lexeme": "function"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "LaunchCredits"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "theGame"
+    },
+    {
+      "kind": "DOT",
+      "lexeme": "."
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "GetGuiManager"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "DOT",
+      "lexeme": "."
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "RequestCreditsMenu"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "CreditsIndex_Witcher3"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "CLEANUP",
+      "lexeme": "cleanup"
+    },
+    {
+      "kind": "FUNCTION",
+      "lexeme": "function"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "ThrowProjectileCleanup"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "IF",
+      "lexeme": "if"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "PARENT",
+      "lexeme": "parent"
+    },
+    {
+      "kind": "DOT",
+      "lexeme": "."
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "wasBombReleased"
+    },
+    {
+      "kind": "EQUAL_EQUAL",
+      "lexeme": "=="
+    },
+    {
+      "kind": "FALSE",
+      "lexeme": "false"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "PARENT",
+      "lexeme": "parent"
+    },
+    {
+      "kind": "DOT",
+      "lexeme": "."
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "wasBombReleased"
+    },
+    {
+      "kind": "EQUAL",
+      "lexeme": "="
+    },
+    {
+      "kind": "TRUE",
+      "lexeme": "true"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "IMPORT",
+      "lexeme": "import"
+    },
+    {
+      "kind": "CLASS",
+      "lexeme": "class"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "CScriptableState"
+    },
+    {
+      "kind": "EXTENDS",
+      "lexeme": "extends"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "IScriptable"
+    },
+    {
+      "kind": "LEFT_BRACE",
+      "lexeme": "{"
+    },
+    {
+      "kind": "IMPORT",
+      "lexeme": "import"
+    },
+    {
+      "kind": "FINAL",
+      "lexeme": "final"
+    },
+    {
+      "kind": "FUNCTION",
+      "lexeme": "function"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "AddTimer"
+    },
+    {
+      "kind": "LEFT_PAREN",
+      "lexeme": "("
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "timerName"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "name"
+    },
+    {
+      "kind": "COMMA",
+      "lexeme": ","
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "period"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "float"
+    },
+    {
+      "kind": "COMMA",
+      "lexeme": ","
+    },
+    {
+      "kind": "OPTIONAL",
+      "lexeme": "optional"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "repeats"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "bool"
+    },
+    {
+      "kind": "RIGHT_PAREN",
+      "lexeme": ")"
+    },
+    {
+      "kind": "COLON",
+      "lexeme": ":"
+    },
+    {
+      "kind": "IDENTIFIER",
+      "lexeme": "int"
+    },
+    {
+      "kind": "SEMICOLON",
+      "lexeme": ";"
+    },
+    {
+      "kind": "RIGHT_BRACE",
+      "lexeme": "}"
+    },
+    {
+      "kind": "EOF",
+      "lexeme": ""
+    }
+  ],
+  "diagnostics": []
+}
