@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from witcherscript_langserver.analysis.symbol_table import SymbolKind
 from witcherscript_langserver.config import load_workspace_config
-from witcherscript_langserver.indexing.file_index import IndexedSymbolKind
 from witcherscript_langserver.indexing.project_index import ProjectIndex, scan_script_files
 from witcherscript_langserver.workspace import WorkspaceState, path_from_uri
 
@@ -38,11 +38,11 @@ def test_project_index_builds_file_indexes_and_symbols(tmp_path: Path) -> None:
 
     assert set(index.files) == {files["player"], files["quest"], files["vanilla"]}
     assert [(symbol.name, symbol.kind, symbol.container_name) for symbol in index.symbols] == [
-        ("Player", IndexedSymbolKind.CLASS, None),
-        ("name", IndexedSymbolKind.VAR, "Player"),
-        ("tick", IndexedSymbolKind.FUNCTION, "Player"),
-        ("QuestState", IndexedSymbolKind.STATE, None),
-        ("BaseCharacter", IndexedSymbolKind.CLASS, None),
+        ("Player", SymbolKind.CLASS, None),
+        ("name", SymbolKind.FIELD, "Player"),
+        ("tick", SymbolKind.FUNCTION, "Player"),
+        ("QuestState", SymbolKind.STATE, None),
+        ("BaseCharacter", SymbolKind.CLASS, None),
     ]
     assert index.diagnostics == ()
 
