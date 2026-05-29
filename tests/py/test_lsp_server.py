@@ -82,13 +82,13 @@ def test_did_save_uses_saved_text_when_available() -> None:
     _feature(server, types.TEXT_DOCUMENT_DID_SAVE)(
         types.DidSaveTextDocumentParams(
             text_document=types.TextDocumentIdentifier(uri=uri),
-            text="syntax_error",
+            text='class Player { var title : string = "oops\n}',
         )
     )
 
-    assert server.document_text(uri) == "syntax_error"
+    assert server.document_text(uri) == 'class Player { var title : string = "oops\n}'
     assert len(published) == 1
-    assert [diagnostic.code for diagnostic in published[0].diagnostics] == ["WS0001"]
+    assert [diagnostic.code for diagnostic in published[0].diagnostics] == ["WS1002", "WS2001"]
 
 
 def _capture_published_diagnostics(
