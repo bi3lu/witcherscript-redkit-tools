@@ -1,5 +1,7 @@
 """Diagnostic conversion helpers for LSP publication."""
 
+from collections.abc import Iterable
+
 from lsprotocol import types
 
 from witcherscript_langserver.parser.errors import SyntaxDiagnostic
@@ -9,18 +11,21 @@ from witcherscript_langserver.parser.tokens import SourcePosition, SourceRange
 DIAGNOSTIC_SOURCE = "witcherscript"
 
 
-def collect_diagnostics(source: str) -> list[types.Diagnostic]:
+def collect_diagnostics(
+    source: str,
+    extra_diagnostics: Iterable[SyntaxDiagnostic] = (),
+) -> list[types.Diagnostic]:
     """Return syntax diagnostics produced by the lexer and parser.
 
     Args:
         source: Full text of the WitcherScript document being analyzed.
+        extra_diagnostics: Additional diagnostics collected from project analysis.
 
     Returns:
         Deduplicated LSP diagnostics for the provided source text.
     """
-    return _deduplicate(
-        [_to_lsp_diagnostic(diagnostic) for diagnostic in parse(source).diagnostics]
-    )
+    diagnostics = [*parse(source).diagnostics, *extra_diagnostics]
+    return _deduplicate([_to_lsp_diagnostic(diagnostic) for diagnostic in diagnostics])
 
 
 def _to_lsp_diagnostic(diagnostic: SyntaxDiagnostic) -> types.Diagnostic:
