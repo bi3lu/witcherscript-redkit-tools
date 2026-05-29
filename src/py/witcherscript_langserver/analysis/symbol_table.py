@@ -91,6 +91,25 @@ class TypeReference:
 
 
 @dataclass(frozen=True)
+class CallableSignature:
+    """Callable declaration data used for call validation.
+
+    Attributes:
+        name: Callable name.
+        file_uri: LSP file URI where the callable is declared.
+        range: Source range covered by the declaration.
+        container_name: Optional containing class or state name.
+        parameter_count: Number of declared parameters.
+    """
+
+    name: str
+    file_uri: str
+    range: SourceRange
+    container_name: str | None
+    parameter_count: int
+
+
+@dataclass(frozen=True)
 class SymbolTable:
     """Project-wide lookup table for symbols, scopes, and type references.
 
@@ -98,11 +117,13 @@ class SymbolTable:
         symbols: All indexed symbols in project order.
         scopes: All indexed scopes in project order.
         type_references: Type-like references found in declarations.
+        callable_signatures: Function and event signatures.
     """
 
     symbols: tuple[Symbol, ...]
     scopes: tuple[Scope, ...]
     type_references: tuple[TypeReference, ...]
+    callable_signatures: tuple[CallableSignature, ...] = ()
 
     @classmethod
     def build(
@@ -110,6 +131,7 @@ class SymbolTable:
         symbols: Iterable[Symbol],
         scopes: Iterable[Scope],
         type_references: Iterable[TypeReference],
+        callable_signatures: Iterable[CallableSignature] = (),
     ) -> SymbolTable:
         """Build a symbol table from project index fragments.
 
@@ -117,6 +139,7 @@ class SymbolTable:
             symbols: Symbols collected from indexed files.
             scopes: Scopes collected from indexed files.
             type_references: Type references collected from indexed files.
+            callable_signatures: Callable signatures collected from indexed files.
 
         Returns:
             Immutable symbol table.
@@ -125,6 +148,7 @@ class SymbolTable:
             symbols=tuple(symbols),
             scopes=tuple(scopes),
             type_references=tuple(type_references),
+            callable_signatures=tuple(callable_signatures),
         )
 
     def symbols_for_file(self, file_uri: str) -> tuple[Symbol, ...]:
@@ -195,3 +219,14 @@ class SymbolTable:
             grouped[symbol.name].append(symbol)
 
         return {name: tuple(items) for name, items in grouped.items()}
+
+    def lookup_callable(self, name: str) -> tuple[CallableSignature, ...]:
+        """Return callable signatures by name.
+
+        Args:
+            name: Function or event name.
+
+        Returns:
+            Matching callable signatures.
+        """
+        return tuple(signature for signature in self.callable_signatures if signature.name == name)
