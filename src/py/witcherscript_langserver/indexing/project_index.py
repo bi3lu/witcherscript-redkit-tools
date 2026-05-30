@@ -12,9 +12,9 @@ from witcherscript_langserver.analysis.diagnostics_rules import (
 )
 from witcherscript_langserver.analysis.inheritance import InheritanceIndex
 from witcherscript_langserver.analysis.symbol_table import Scope, Symbol, SymbolTable, TypeReference
-from witcherscript_langserver.config import WorkspaceConfig
 from witcherscript_langserver.indexing.file_index import FileIndex, build_file_index
 from witcherscript_langserver.parser.errors import SyntaxDiagnostic
+from witcherscript_langserver.workspace.config import WorkspaceConfig
 
 
 @dataclass
