@@ -264,7 +264,13 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
         Returns:
             Completion list.
         """
-        return completions(ls.workspace_state.index, normalize_file_uri(params.text_document.uri))
+        uri = params.text_document.uri
+        return completions(
+            ls.workspace_state.index,
+            normalize_file_uri(uri),
+            ls.document_text(uri),
+            params.position,
+        )
 
     @server.feature(types.TEXT_DOCUMENT_HOVER)
     def hover_info(
