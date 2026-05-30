@@ -99,6 +99,12 @@ uv run mypy src/py
 uv run pytest
 ```
 
+Run the end-to-end language-server fixture suite:
+
+```bash
+uv run pytest tests/py/test_e2e.py
+```
+
 Run .NET checks:
 
 ```bash

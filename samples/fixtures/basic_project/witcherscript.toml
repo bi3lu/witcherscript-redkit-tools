@@ -1,0 +1,6 @@
+[project]
+name = "BasicFixture"
+
+[scripts]
+source_roots = ["scripts"]
+exclude = ["**/bin/**", "**/.cache/**", "**/generated/**"]

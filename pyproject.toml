@@ -81,6 +81,9 @@ known_first_party = [
 testpaths = ["tests/py"]
 pythonpath = ["src/py"]
 addopts = "-ra --strict-markers --strict-config"
+markers = [
+  "performance: performance-oriented regression tests for indexing throughput",
+]
 
 [tool.mypy]
 python_version = "3.12"

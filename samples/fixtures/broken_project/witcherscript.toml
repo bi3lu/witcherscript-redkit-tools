@@ -1,0 +1,5 @@
+[project]
+name = "BrokenFixture"
+
+[scripts]
+source_roots = ["scripts"]
