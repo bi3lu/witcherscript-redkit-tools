@@ -302,7 +302,8 @@ def test_definition_hover_completion_and_references(tmp_path: Path) -> None:
     )
     completion = cast("types.CompletionList", completion_result)
     labels = {item.label for item in completion.items}
-    assert {"class", "function", "Player", "Base", "title", "make", "local"} <= labels
+    assert {"return", "var", "Player", "Base", "title", "make", "local"} <= labels
+    assert "class" not in labels
 
     references_result = _feature(server, types.TEXT_DOCUMENT_REFERENCES)(
         types.ReferenceParams(

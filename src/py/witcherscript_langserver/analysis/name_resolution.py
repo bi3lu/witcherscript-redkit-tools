@@ -122,6 +122,17 @@ class NameResolver:
         symbols.extend(self._index.symbol_table.global_symbols())
         return tuple(_deduplicate_symbols(symbols))
 
+    def members_for_type(self, type_name: str) -> tuple[Symbol, ...]:
+        """Return members declared on a type and its base classes.
+
+        Args:
+            type_name: Class or state type name.
+
+        Returns:
+            Fields, functions, and events visible on the type.
+        """
+        return self._members_for_type(type_name)
+
     def resolve_type(self, name: str) -> Symbol | None:
         """Resolve a class or state type by name.
 
