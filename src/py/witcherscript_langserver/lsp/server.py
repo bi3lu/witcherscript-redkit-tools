@@ -16,6 +16,8 @@ from .hover import hover
 from .references import references
 from .symbols import document_symbols, workspace_symbols
 
+REFRESH_INDEX_COMMAND = "witcherscript.refreshIndex"
+
 
 class WitcherScriptLanguageServer(LanguageServer):
     """Minimal WitcherScript language server state.
@@ -166,6 +168,29 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
             else:
                 ls.workspace_state.refresh_file(change.uri)
 
+    @server.feature(
+        types.WORKSPACE_EXECUTE_COMMAND,
+        types.ExecuteCommandOptions(commands=[REFRESH_INDEX_COMMAND]),
+    )
+    def execute_command(
+        ls: WitcherScriptLanguageServer,
+        params: types.ExecuteCommandParams,
+    ) -> dict[str, int] | None:
+        """Run a workspace command requested by the LSP client.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Execute command request parameters.
+
+        Returns:
+            Command result payload for known commands, or ``None`` for unknown
+            commands.
+        """
+        if params.command != REFRESH_INDEX_COMMAND:
+            return None
+
+        return refresh_workspace_index(ls)
+
     @server.feature(types.TEXT_DOCUMENT_DOCUMENT_SYMBOL)
     def document_symbol(
         ls: WitcherScriptLanguageServer,
@@ -308,6 +333,36 @@ def publish_diagnostics(ls: WitcherScriptLanguageServer, uri: str, text: str) ->
             ),
         )
     )
+
+
+def refresh_workspace_index(ls: WitcherScriptLanguageServer) -> dict[str, int]:
+    """Reload workspace configuration and rebuild the project index.
+
+    Args:
+        ls: Active WitcherScript language server instance.
+
+    Returns:
+        Summary of the refreshed index.
+    """
+    ls.workspace_state.reload()
+
+    for uri, text in _unique_cached_documents(ls).items():
+        ls.workspace_state.update_file(uri, text)
+        publish_diagnostics(ls, uri, text)
+
+    return {
+        "indexedFiles": len(ls.workspace_state.index.files),
+        "indexedSymbols": len(ls.workspace_state.index.symbols),
+    }
+
+
+def _unique_cached_documents(ls: WitcherScriptLanguageServer) -> dict[str, str]:
+    documents: dict[str, str] = {}
+
+    for uri, text in ls.documents.items():
+        documents[normalize_file_uri(uri)] = text
+
+    return documents
 
 
 def _text_from_change(params: types.DidChangeTextDocumentParams) -> str:
