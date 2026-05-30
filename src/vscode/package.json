@@ -1,0 +1,106 @@
+{
+  "name": "witcherscript-redkit-tools",
+  "displayName": "WitcherScript REDkit Tools",
+  "description": "VS Code harness for the WitcherScript language server and REDkit project tooling.",
+  "version": "0.1.0",
+  "publisher": "witcherscript",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.92.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:witcherscript",
+    "onCommand:witcherscript.refreshIndex",
+    "onCommand:witcherscript.redkitInit",
+    "onCommand:witcherscript.restartLanguageServer"
+  ],
+  "main": "./out/extension.js",
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "check": "tsc --noEmit -p ./",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.10.1",
+    "@types/vscode": "^1.92.0",
+    "eslint": "^10.4.1",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.60.0"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "witcherscript",
+        "aliases": [
+          "WitcherScript",
+          "witcherscript"
+        ],
+        "extensions": [
+          ".ws"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "witcherscript.refreshIndex",
+        "title": "WitcherScript: Refresh Project Index"
+      },
+      {
+        "command": "witcherscript.redkitInit",
+        "title": "WitcherScript: Initialize REDkit Config"
+      },
+      {
+        "command": "witcherscript.restartLanguageServer",
+        "title": "WitcherScript: Restart Language Server"
+      }
+    ],
+    "configuration": {
+      "title": "WitcherScript REDkit Tools",
+      "properties": {
+        "witcherscript.languageServer.command": {
+          "type": "string",
+          "default": "uv",
+          "description": "Command used to start the WitcherScript language server."
+        },
+        "witcherscript.languageServer.args": {
+          "type": "array",
+          "default": [
+            "run",
+            "witcherscript-lsp"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Arguments passed to the WitcherScript language server command."
+        },
+        "witcherscript.languageServer.cwd": {
+          "type": "string",
+          "default": "${extensionPath}/../..",
+          "description": "Working directory used when starting the language server."
+        },
+        "witcherscript.redkit.command": {
+          "type": "string",
+          "default": "dotnet",
+          "description": "Command used to run the REDkit tooling CLI."
+        },
+        "witcherscript.redkit.args": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Arguments placed before the REDkit CLI command. When empty, the extension runs the repository-local C# CLI project."
+        }
+      }
+    }
+  }
+}

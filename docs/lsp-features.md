@@ -24,6 +24,18 @@ Supported synchronization messages:
 
 The server uses full-document synchronization. Opened and changed files update the document cache and the project index. Watched file changes refresh or remove indexed files when the LSP client reports external changes.
 
+## Workspace Commands
+
+Supported request:
+
+- `workspace/executeCommand`
+
+Supported command:
+
+- `witcherscript.refreshIndex`
+
+This command reloads `witcherscript.toml`, rebuilds the project index, and keeps open document contents active in the rebuilt index. It is intended for clients that run REDkit tooling commands, such as `ws-redkit init`, while the language server process is already running.
+
 ## Diagnostics
 
 Supported publication:

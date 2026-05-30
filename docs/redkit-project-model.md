@@ -63,6 +63,8 @@ The configuration boundary is simple:
 - Python reads the TOML file and indexes scripts.
 - C# owns REDkit project data and command-line tooling.
 - Both sides use explicit paths rather than implicit global state.
+- An LSP client can call `witcherscript.refreshIndex` after `ws-redkit init`
+  so the running language server reloads the generated configuration.
 
 ## Path Handling
 
@@ -72,14 +74,37 @@ Relative paths in `witcherscript.toml` are resolved from the workspace root by t
 
 ## CLI
 
-The REDkit CLI project builds as part of the .NET solution and exposes a version command:
+The REDkit CLI project builds as part of the .NET solution and exposes project tooling commands:
 
 ```bash
-dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- --version
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- detect
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- init
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- print-config
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- validate
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- recompile --executable <path>
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- launch-game --executable <path>
 ```
 
-Output:
+Common options:
 
-```text
-ws-redkit 0.1.0
+- `--project-dir <path>`
+- `--game-dir <path>`
+- `--redkit-dir <path>`
+- `--force`
+
+The `detect` command prints JSON:
+
+```json
+{
+  "gameDirectory": "D:/Steam/steamapps/common/The Witcher 3",
+  "redkitDirectory": "D:/Steam/steamapps/common/The Witcher 3 REDkit",
+  "projectDirectory": "D:/REDkitProjects/MyMod",
+  "scriptRoots": [
+    "D:/REDkitProjects/MyMod/content/scripts",
+    "D:/Steam/steamapps/common/The Witcher 3/content/content0/scripts"
+  ]
+}
 ```
+
+The `init` command writes `witcherscript.toml` into the detected project directory.
+Use `--force` when an existing configuration should be replaced.

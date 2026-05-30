@@ -6,11 +6,15 @@ from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from pathlib import Path
 
+from witcherscript_langserver.analysis.diagnostics_rules import (
+    SemanticDiagnosticSet,
+    collect_semantic_diagnostics,
+)
 from witcherscript_langserver.analysis.inheritance import InheritanceIndex
 from witcherscript_langserver.analysis.symbol_table import Scope, Symbol, SymbolTable, TypeReference
-from witcherscript_langserver.config import WorkspaceConfig
 from witcherscript_langserver.indexing.file_index import FileIndex, build_file_index
 from witcherscript_langserver.parser.errors import SyntaxDiagnostic
+from witcherscript_langserver.workspace.config import WorkspaceConfig
 
 
 @dataclass
@@ -21,11 +25,15 @@ class ProjectIndex:
         files: Mapping from local file path to per-file index data.
         symbol_table: Project-wide symbol table rebuilt after index changes.
         inheritance_index: Class inheritance lookup rebuilt after index changes.
+        semantic_diagnostics: Project semantic diagnostics grouped by file URI.
     """
 
     files: dict[Path, FileIndex] = field(default_factory=dict)
     symbol_table: SymbolTable = field(default_factory=lambda: SymbolTable.build((), (), ()))
     inheritance_index: InheritanceIndex = field(default_factory=lambda: InheritanceIndex.build(()))
+    semantic_diagnostics: SemanticDiagnosticSet = field(
+        default_factory=lambda: SemanticDiagnosticSet({})
+    )
 
     @classmethod
     def build(cls, config: WorkspaceConfig) -> ProjectIndex:
@@ -99,12 +107,31 @@ class ProjectIndex:
 
     @property
     def diagnostics(self) -> tuple[SyntaxDiagnostic, ...]:
-        """Return all indexed syntax diagnostics in project order.
+        """Return all indexed diagnostics in project order.
 
         Returns:
-            Flattened diagnostics from every indexed file.
+            Flattened syntax and semantic diagnostics from every indexed file.
         """
-        return tuple(diagnostic for file in self.files.values() for diagnostic in file.diagnostics)
+        return tuple(
+            diagnostic
+            for file in self.files.values()
+            for diagnostic in (*file.diagnostics, *self.semantic_diagnostics.for_file(file.uri))
+        )
+
+    def diagnostics_for_uri(self, file_uri: str) -> tuple[SyntaxDiagnostic, ...]:
+        """Return indexed diagnostics for a file URI.
+
+        Args:
+            file_uri: LSP file URI.
+
+        Returns:
+            Syntax and semantic diagnostics for the file.
+        """
+        for file in self.files.values():
+            if file.uri == file_uri:
+                return (*file.diagnostics, *self.semantic_diagnostics.for_file(file_uri))
+
+        return self.semantic_diagnostics.for_file(file_uri)
 
     @property
     def imports(self) -> tuple[tuple[str, str], ...]:
@@ -138,8 +165,20 @@ class ProjectIndex:
         type_references = tuple(
             reference for file in self.files.values() for reference in file.type_references
         )
-        self.symbol_table = SymbolTable.build(symbols, scopes, type_references)
+        callable_signatures = tuple(
+            signature for file in self.files.values() for signature in file.callable_signatures
+        )
+        self.symbol_table = SymbolTable.build(
+            symbols,
+            scopes,
+            type_references,
+            callable_signatures,
+        )
         self.inheritance_index = InheritanceIndex.build(symbols)
+        self.semantic_diagnostics = collect_semantic_diagnostics(
+            tuple(self.files.values()),
+            self.symbol_table,
+        )
 
 
 def scan_script_files(config: WorkspaceConfig) -> tuple[Path, ...]:

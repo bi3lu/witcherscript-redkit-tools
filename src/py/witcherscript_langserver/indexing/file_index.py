@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from witcherscript_langserver.analysis.symbol_table import (
+    CallableSignature,
     Scope,
     ScopeKind,
     Symbol,
@@ -40,6 +41,8 @@ class FileIndex:
         symbols: Symbols extracted from the module.
         scopes: Structural scopes extracted from the module.
         type_references: Type references extracted from declarations.
+        callable_signatures: Function and event signatures extracted from declarations.
+        source: Full source text used for semantic scans.
         diagnostics: Recoverable lexer and parser diagnostics for the file.
     """
 
@@ -50,6 +53,8 @@ class FileIndex:
     symbols: tuple[Symbol, ...]
     scopes: tuple[Scope, ...]
     type_references: tuple[TypeReference, ...]
+    callable_signatures: tuple[CallableSignature, ...]
+    source: str
     diagnostics: tuple[SyntaxDiagnostic, ...]
 
 
@@ -73,6 +78,8 @@ def build_file_index(path: Path, uri: str, source: str) -> FileIndex:
         symbols=tuple(_module_symbols(result.module, uri)),
         scopes=tuple(_module_scopes(result.module, uri)),
         type_references=tuple(_module_type_references(result.module, uri)),
+        callable_signatures=tuple(_module_callable_signatures(result.module, uri)),
+        source=source,
         diagnostics=tuple(result.diagnostics),
     )
 
@@ -355,3 +362,38 @@ def _type_references(
 
 def _type_reference_names(type_name: str) -> tuple[str, ...]:
     return tuple(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", type_name))
+
+
+def _module_callable_signatures(module: Module, file_uri: str) -> list[CallableSignature]:
+    signatures: list[CallableSignature] = []
+
+    for declaration in module.declarations:
+        signatures.extend(_declaration_callable_signatures(declaration, file_uri, None))
+
+    return signatures
+
+
+def _declaration_callable_signatures(
+    declaration: Decl,
+    file_uri: str,
+    container_name: str | None,
+) -> list[CallableSignature]:
+    if isinstance(declaration, ClassDecl | StateDecl):
+        signatures: list[CallableSignature] = []
+        for member in declaration.members:
+            signatures.extend(_declaration_callable_signatures(member, file_uri, declaration.name))
+
+        return signatures
+
+    if isinstance(declaration, FunctionDecl):
+        return [
+            CallableSignature(
+                name=declaration.name,
+                file_uri=file_uri,
+                range=declaration.range,
+                container_name=container_name,
+                parameter_count=len(declaration.params),
+            )
+        ]
+
+    return []

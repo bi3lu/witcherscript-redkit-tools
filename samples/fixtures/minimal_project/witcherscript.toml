@@ -1,0 +1,5 @@
+[project]
+name = "MinimalFixture"
+
+[scripts]
+source_roots = ["scripts"]

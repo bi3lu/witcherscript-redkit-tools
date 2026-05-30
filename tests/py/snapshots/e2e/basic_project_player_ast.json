@@ -1,0 +1,61 @@
+{
+  "diagnostics": [],
+  "module": {
+    "declarations": [
+      {
+        "base_name": "BaseActor",
+        "flags": [],
+        "kind": "ClassDecl",
+        "members": [
+          {
+            "flags": [],
+            "has_initializer": false,
+            "kind": "VarDecl",
+            "name": "title",
+            "type_name": "string"
+          },
+          {
+            "flags": [],
+            "has_body": true,
+            "kind": "FunctionDecl",
+            "locals": [
+              {
+                "flags": [],
+                "has_initializer": false,
+                "kind": "VarDecl",
+                "name": "local",
+                "type_name": "BaseActor"
+              }
+            ],
+            "name": "makeBase",
+            "params": [
+              {
+                "flags": [],
+                "name": "input",
+                "type_name": "BaseActor"
+              }
+            ],
+            "return_type": "BaseActor",
+            "statements": [
+              {
+                "has_expression": false,
+                "kind": "var"
+              },
+              {
+                "has_expression": true,
+                "kind": "return"
+              }
+            ]
+          }
+        ],
+        "name": "PlayerCharacter"
+      }
+    ],
+    "imports": [
+      {
+        "kind": "ImportDecl",
+        "target": "\"quest\""
+      }
+    ]
+  }
+}
