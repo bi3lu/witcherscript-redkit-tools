@@ -105,6 +105,14 @@ Run .NET checks:
 dotnet test src/dotnet/WitcherScript.RedkitTooling.sln
 ```
 
+Run VS Code extension checks:
+
+```bash
+npm --prefix src/vscode run lint
+npm --prefix src/vscode run check
+npm --prefix src/vscode run compile
+```
+
 Run the combined shortcuts:
 
 ```bash

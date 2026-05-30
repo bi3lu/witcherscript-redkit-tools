@@ -21,6 +21,8 @@ npm install
 Compile the extension:
 
 ```bash
+npm run lint
+npm run check
 npm run compile
 ```
 

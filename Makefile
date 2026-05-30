@@ -1,4 +1,4 @@
-.PHONY: sync lint format test test-py test-dotnet vscode-compile vscode-check docker-build docker-shell docker-lint docker-test
+.PHONY: sync lint format test test-py test-dotnet vscode-compile vscode-check vscode-lint docker-build docker-shell docker-lint docker-test
 
 sync:
 	uv sync --all-extras --dev
@@ -26,6 +26,9 @@ vscode-compile:
 
 vscode-check:
 	npm --prefix src/vscode run check
+
+vscode-lint:
+	npm --prefix src/vscode run lint
 
 docker-build:
 	docker compose build dev

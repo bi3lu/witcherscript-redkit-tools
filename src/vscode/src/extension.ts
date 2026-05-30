@@ -1,11 +1,8 @@
 import * as cp from "node:child_process";
 import * as path from "node:path";
 import * as vscode from "vscode";
-import {
-  LanguageClient,
-  LanguageClientOptions,
-  ServerOptions,
-} from "vscode-languageclient/node";
+import { LanguageClient } from "vscode-languageclient/node";
+import type { LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
 
 const CONFIG_SECTION = "witcherscript";
 const REFRESH_INDEX_COMMAND = "witcherscript.refreshIndex";
@@ -163,7 +160,7 @@ function executeRedkitCommand(command: string, args: string[]): Promise<void> {
       if (error !== null) {
         outputChannel?.show(true);
         vscode.window.showErrorMessage(`REDkit config initialization failed: ${error.message}`);
-        reject(error);
+        reject(new Error(error.message, { cause: error }));
         return;
       }
 
