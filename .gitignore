@@ -21,8 +21,16 @@ TestResults/
 *.user
 *.suo
 
+# VS Code extension
+src/vscode/node_modules/
+src/vscode/out/
+src/vscode/*.vsix
+
 # IDE
 .vscode/
+!src/vscode/.vscode/
+!src/vscode/.vscode/launch.json
+!src/vscode/.vscode/tasks.json
 .idea/
 .vs/
 
