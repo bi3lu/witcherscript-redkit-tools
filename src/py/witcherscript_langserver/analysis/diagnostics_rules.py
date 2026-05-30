@@ -324,17 +324,31 @@ def _known_names(
     function: FunctionDecl,
     container_name: str | None,
 ) -> set[str]:
-    names = {symbol.name for symbol in symbol_table.global_symbols()}
+    names = {"this", *(symbol.name for symbol in symbol_table.global_symbols())}
     names.update(param.name for param in function.params)
     names.update(local.name for local in function.locals)
 
     if container_name is not None:
+        names.update(_member_names_for_type(symbol_table, container_name))
+
+    return names
+
+
+def _member_names_for_type(symbol_table: SymbolTable, type_name: str) -> set[str]:
+    names: set[str] = set()
+    visited: set[str] = set()
+    current_type: str | None = type_name
+
+    while current_type is not None and current_type not in visited:
+        visited.add(current_type)
         names.update(
             symbol.name
             for symbol in symbol_table.symbols
-            if symbol.container_name == container_name
+            if symbol.container_name == current_type
             and symbol.kind in {SymbolKind.FIELD, SymbolKind.FUNCTION, SymbolKind.EVENT}
         )
+        current_type_symbol = symbol_table.lookup_type(current_type)
+        current_type = current_type_symbol.type_name if current_type_symbol is not None else None
 
     return names
 
