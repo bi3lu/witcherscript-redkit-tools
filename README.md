@@ -4,6 +4,8 @@ Developer tooling for WitcherScript projects used with The Witcher 3 REDkit.
 
 The repository contains a Python language server for WitcherScript and a C# REDkit tooling foundation. The language server provides editor-facing language intelligence through the Language Server Protocol, while the C# project keeps Windows and REDkit-specific project data in a strongly typed model.
 
+It also includes a minimal VS Code extension used as an editor client for local language-server testing.
+
 ## Capabilities
 
 The WitcherScript language server currently supports:
@@ -31,6 +33,14 @@ The REDkit tooling project contains:
 - command adapters for script recompilation and game launch
 - .NET build and test integration
 
+The VS Code extension contains:
+
+- `.ws` language activation
+- configurable Python language-server startup
+- command to refresh the project index
+- command to initialize `witcherscript.toml` through the C# CLI
+- Extension Host debug configuration
+
 ## Repository Layout
 
 ```text
@@ -39,7 +49,8 @@ The REDkit tooling project contains:
 ├─ samples/                      WitcherScript samples and workspace fixtures
 ├─ src/
 │  ├─ py/                        Python language server and developer CLI
-│  └─ dotnet/                    C# REDkit tooling solution
+│  ├─ dotnet/                    C# REDkit tooling solution
+│  └─ vscode/                    VS Code language-server client
 ├─ tests/py/                     Python tests and snapshots
 ├─ Dockerfile                    Development container image
 ├─ docker-compose.yml            Container workflow
@@ -113,6 +124,18 @@ The server is designed to be launched by an LSP client. It reads the workspace r
 
 When REDkit tooling creates or updates `witcherscript.toml` while the server is already running, the LSP client can call `workspace/executeCommand` with `witcherscript.refreshIndex`. The server reloads the TOML file, rebuilds the project index, and keeps currently open document contents active in the index.
 
+## VS Code Extension
+
+The VS Code harness lives in `src/vscode`.
+
+```bash
+cd src/vscode
+npm install
+npm run compile
+```
+
+Open `src/vscode` in VS Code and run `Run WitcherScript Extension`. See [docs/vscode-extension.md](docs/vscode-extension.md) for settings and command details.
+
 ## Workspace Configuration
 
 Place `witcherscript.toml` at the workspace root:
@@ -181,6 +204,7 @@ See [docs/containers.md](docs/containers.md) for details about volumes, Dev Cont
 - [Language Server Features](docs/lsp-features.md)
 - [REDkit Project Model](docs/redkit-project-model.md)
 - [WitcherScript Notes](docs/witcherscript-notes.md)
+- [VS Code Extension](docs/vscode-extension.md)
 - [Containers](docs/containers.md)
 
 ## License
