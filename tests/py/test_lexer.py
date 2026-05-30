@@ -1,3 +1,5 @@
+"""Tests for WitcherScript lexer snapshots and token ranges."""
+
 import json
 from pathlib import Path
 from typing import Any, cast

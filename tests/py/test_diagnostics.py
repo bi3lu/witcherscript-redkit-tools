@@ -1,3 +1,5 @@
+"""Tests for LSP diagnostic collection and deduplication."""
+
 from lsprotocol import types
 
 from witcherscript_langserver.diagnostics import _deduplicate, collect_diagnostics

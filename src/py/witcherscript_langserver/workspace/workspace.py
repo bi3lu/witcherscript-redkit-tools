@@ -41,7 +41,20 @@ class WorkspaceState:
             return
 
         self.root_path = root_path
-        self.config = load_workspace_config(root_path)
+        self.reload()
+
+    def reload(self) -> None:
+        """Reload workspace configuration and rebuild the project index.
+
+        This is used when external tooling has generated or updated
+        ``witcherscript.toml`` while the language server is already running.
+        """
+        if self.root_path is None:
+            self.config = None
+            self.index = ProjectIndex()
+            return
+
+        self.config = load_workspace_config(self.root_path)
         self.reindex()
 
     def reindex(self) -> None:

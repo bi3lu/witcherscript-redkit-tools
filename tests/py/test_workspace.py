@@ -1,3 +1,5 @@
+"""Tests for workspace configuration, scanning, and URI handling."""
+
 from pathlib import Path
 
 from witcherscript_langserver.analysis.symbol_table import SymbolKind

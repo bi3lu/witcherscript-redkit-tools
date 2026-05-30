@@ -87,6 +87,11 @@ class _SemanticDiagnostic:
     file_uri: str
 
     def to_syntax_diagnostic(self) -> SyntaxDiagnostic:
+        """Convert the semantic diagnostic to the shared diagnostic model.
+
+        Returns:
+            Syntax-compatible diagnostic used by the LSP diagnostics pipeline.
+        """
         return SyntaxDiagnostic(code=self.code, message=self.message, range=self.range)
 
 

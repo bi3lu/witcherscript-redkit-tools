@@ -1,3 +1,5 @@
+"""Tests for project symbol, scope, inheritance, and import indexing."""
+
 from pathlib import Path
 
 from witcherscript_langserver.analysis.symbol_table import ScopeKind, SymbolKind

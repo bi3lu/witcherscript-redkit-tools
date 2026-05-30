@@ -1,10 +1,18 @@
 namespace WitcherScript.RedkitTooling;
 
+/// <summary>
+/// Detects REDkit project metadata, content repositories, and script roots.
+/// </summary>
 public sealed class RedkitProjectDetector
 {
     private readonly GameInstallationDetector _gameDetector;
     private readonly RedkitInstallationDetector _redkitDetector;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RedkitProjectDetector"/> class.
+    /// </summary>
+    /// <param name="gameDetector">Detector used for The Witcher 3 installation discovery.</param>
+    /// <param name="redkitDetector">Detector used for REDkit installation discovery.</param>
     public RedkitProjectDetector(
         GameInstallationDetector? gameDetector = null,
         RedkitInstallationDetector? redkitDetector = null
@@ -14,6 +22,11 @@ public sealed class RedkitProjectDetector
         _redkitDetector = redkitDetector ?? new RedkitInstallationDetector();
     }
 
+    /// <summary>
+    /// Detects a REDkit project model from filesystem options.
+    /// </summary>
+    /// <param name="options">Detection options supplied by the caller.</param>
+    /// <returns>A REDkit project model with repositories and script roots.</returns>
     public RedkitProject Detect(DetectionOptions options)
     {
         var projectDirectory = ResolveProjectDirectory(options.ProjectDirectory);
@@ -36,6 +49,11 @@ public sealed class RedkitProjectDetector
         );
     }
 
+    /// <summary>
+    /// Detects a compact result suitable for JSON output from command-line tooling.
+    /// </summary>
+    /// <param name="options">Detection options supplied by the caller.</param>
+    /// <returns>Detected paths and script roots.</returns>
     public ToolDetectionResult DetectResult(DetectionOptions options)
     {
         var project = Detect(options);

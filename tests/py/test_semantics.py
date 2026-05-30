@@ -1,3 +1,5 @@
+"""Tests for project-level semantic diagnostics."""
+
 from pathlib import Path
 
 from witcherscript_langserver.config import load_workspace_config

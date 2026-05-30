@@ -2,8 +2,12 @@ using System.Diagnostics;
 
 namespace WitcherScript.RedkitTooling;
 
+/// <summary>
+/// Default process runner based on <see cref="System.Diagnostics.Process"/>.
+/// </summary>
 public sealed class ProcessRunner : IProcessRunner
 {
+    /// <inheritdoc />
     public async Task<ProcessRunResult> RunAsync(
         string fileName,
         IReadOnlyList<string> arguments,
