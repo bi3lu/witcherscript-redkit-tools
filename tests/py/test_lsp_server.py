@@ -4,7 +4,11 @@ from typing import cast
 
 from lsprotocol import types
 
-from witcherscript_langserver.server import WitcherScriptLanguageServer, create_server
+from witcherscript_langserver.server import (
+    REFRESH_INDEX_COMMAND,
+    WitcherScriptLanguageServer,
+    create_server,
+)
 
 
 def test_server_registers_minimal_lsp_features() -> None:
@@ -17,6 +21,7 @@ def test_server_registers_minimal_lsp_features() -> None:
     assert types.TEXT_DOCUMENT_DID_CHANGE in features
     assert types.TEXT_DOCUMENT_DID_SAVE in features
     assert types.WORKSPACE_DID_CHANGE_WATCHED_FILES in features
+    assert types.WORKSPACE_EXECUTE_COMMAND in features
     assert types.TEXT_DOCUMENT_DOCUMENT_SYMBOL in features
     assert types.WORKSPACE_SYMBOL in features
     assert types.TEXT_DOCUMENT_DEFINITION in features
@@ -178,6 +183,59 @@ def test_watched_file_changes_refresh_workspace_index(tmp_path: Path) -> None:
     )
 
     assert player not in server.workspace_state.index.files
+
+
+def test_refresh_index_command_reloads_generated_config(tmp_path: Path) -> None:
+    scripts = tmp_path / "scripts"
+    generated = tmp_path / "generated-by-redkit"
+    scripts.mkdir()
+    generated.mkdir()
+    player = scripts / "player.ws"
+    quest = generated / "quest.ws"
+    player.write_text("class Player {}", encoding="utf-8")
+    quest.write_text("class Quest {}", encoding="utf-8")
+    (tmp_path / "witcherscript.toml").write_text(
+        '[scripts]\nsource_roots = ["scripts"]\n',
+        encoding="utf-8",
+    )
+    server = _initialized_server(tmp_path)
+
+    assert set(server.workspace_state.index.files) == {player}
+
+    (tmp_path / "witcherscript.toml").write_text(
+        '[scripts]\nsource_roots = ["scripts", "generated-by-redkit"]\n',
+        encoding="utf-8",
+    )
+    result = _feature(server, types.WORKSPACE_EXECUTE_COMMAND)(
+        types.ExecuteCommandParams(command=REFRESH_INDEX_COMMAND)
+    )
+
+    assert result == {"indexedFiles": 2, "indexedSymbols": 2}
+    assert set(server.workspace_state.index.files) == {player, quest}
+
+
+def test_refresh_index_command_preserves_open_document_edits(tmp_path: Path) -> None:
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    player = scripts / "player.ws"
+    player.write_text("class Player {}", encoding="utf-8")
+    (tmp_path / "witcherscript.toml").write_text(
+        '[scripts]\nsource_roots = ["scripts"]\n',
+        encoding="utf-8",
+    )
+    server = _initialized_server(tmp_path)
+    published = _capture_published_diagnostics(server)
+
+    _open_document(server, player, "class Unsaved {}")
+    result = _feature(server, types.WORKSPACE_EXECUTE_COMMAND)(
+        types.ExecuteCommandParams(command=REFRESH_INDEX_COMMAND)
+    )
+
+    assert result == {"indexedFiles": 1, "indexedSymbols": 1}
+    assert [symbol.name for symbol in server.workspace_state.index.files[player].symbols] == [
+        "Unsaved"
+    ]
+    assert published[-1].uri == player.as_uri()
 
 
 def test_document_symbols_returns_outline(tmp_path: Path) -> None:

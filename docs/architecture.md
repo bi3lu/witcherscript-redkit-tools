@@ -47,9 +47,9 @@ Core responsibilities:
 
 Important modules:
 
-- `server.py`: LSP server construction and feature registration
-- `workspace.py`: workspace state, URI normalization, file indexing updates
-- `config.py`: `witcherscript.toml` model and loader
+- `lsp/server.py`: LSP server construction, feature registration, and workspace commands
+- `workspace/workspace.py`: workspace state, URI normalization, file indexing updates
+- `workspace/config.py`: `witcherscript.toml` model and loader
 - `parser/lexer.py`: tokenization
 - `parser/parser.py`: tolerant structural parser
 - `diagnostics.py`: conversion from parser diagnostics to LSP diagnostics
@@ -67,6 +67,10 @@ Current responsibilities:
 
 - REDkit project data model
 - content repository model
+- project, game, and REDkit directory detection
+- `witcherscript.toml` generation
+- project validation
+- script recompilation and game launch process adapters
 - command-line entry point
 - .NET build and test integration
 
@@ -85,6 +89,11 @@ Important projects:
 5. The server scans `.ws` files, parses them, and builds the project index.
 6. Open, change, save, and watched-file notifications update the index.
 7. LSP feature requests read from the document cache and symbol table.
+
+When the REDkit CLI creates or updates `witcherscript.toml`, the client can call
+`workspace/executeCommand` with `witcherscript.refreshIndex`. The server reloads
+the workspace configuration, rebuilds the project index, and reapplies open
+documents from the in-memory cache.
 
 ## Indexing Model
 

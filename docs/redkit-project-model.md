@@ -63,6 +63,8 @@ The configuration boundary is simple:
 - Python reads the TOML file and indexes scripts.
 - C# owns REDkit project data and command-line tooling.
 - Both sides use explicit paths rather than implicit global state.
+- An LSP client can call `witcherscript.refreshIndex` after `ws-redkit init`
+  so the running language server reloads the generated configuration.
 
 ## Path Handling
 
@@ -103,3 +105,6 @@ The `detect` command prints JSON:
   ]
 }
 ```
+
+The `init` command writes `witcherscript.toml` into the detected project directory.
+Use `--force` when an existing configuration should be replaced.
