@@ -2,8 +2,16 @@ using System.Text;
 
 namespace WitcherScript.RedkitTooling;
 
+/// <summary>
+/// Writes language-server compatible <c>witcherscript.toml</c> configuration files.
+/// </summary>
 public sealed class WitcherScriptConfigWriter
 {
+    /// <summary>
+    /// Serializes a REDkit project model to TOML understood by the language server.
+    /// </summary>
+    /// <param name="project">Project model to serialize.</param>
+    /// <returns>The generated TOML document.</returns>
     public string Write(RedkitProject project)
     {
         var builder = new StringBuilder();
@@ -27,6 +35,12 @@ public sealed class WitcherScriptConfigWriter
         return builder.ToString();
     }
 
+    /// <summary>
+    /// Writes a language-server configuration file to disk.
+    /// </summary>
+    /// <param name="project">Project model to serialize.</param>
+    /// <param name="path">Destination file path.</param>
+    /// <param name="overwrite">Whether an existing file may be replaced.</param>
     public void WriteToFile(RedkitProject project, string path, bool overwrite)
     {
         if (File.Exists(path) && !overwrite)

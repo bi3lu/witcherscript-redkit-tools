@@ -1,14 +1,26 @@
 namespace WitcherScript.RedkitTooling;
 
+/// <summary>
+/// Detects The Witcher 3 installation directories from manual, environment, and known paths.
+/// </summary>
 public sealed class GameInstallationDetector
 {
     private readonly IReadOnlyList<string> _candidateDirectories;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GameInstallationDetector"/> class.
+    /// </summary>
+    /// <param name="candidateDirectories">Candidate directories checked after manual and environment paths.</param>
     public GameInstallationDetector(IEnumerable<string>? candidateDirectories = null)
     {
         _candidateDirectories = candidateDirectories?.ToArray() ?? DefaultCandidateDirectories();
     }
 
+    /// <summary>
+    /// Detects a valid The Witcher 3 installation directory.
+    /// </summary>
+    /// <param name="manualPath">Optional path supplied by the caller.</param>
+    /// <returns>The full installation path when found; otherwise, <see langword="null"/>.</returns>
     public string? Detect(string? manualPath = null)
     {
         if (!string.IsNullOrWhiteSpace(manualPath) && IsGameDirectory(manualPath))
@@ -34,6 +46,11 @@ public sealed class GameInstallationDetector
         return null;
     }
 
+    /// <summary>
+    /// Determines whether a path looks like a The Witcher 3 installation directory.
+    /// </summary>
+    /// <param name="path">Path to inspect.</param>
+    /// <returns><see langword="true"/> when the path contains expected game files or script folders.</returns>
     public static bool IsGameDirectory(string? path)
     {
         if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))

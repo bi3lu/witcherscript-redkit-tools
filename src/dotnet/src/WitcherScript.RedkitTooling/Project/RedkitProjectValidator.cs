@@ -1,7 +1,15 @@
 namespace WitcherScript.RedkitTooling;
 
+/// <summary>
+/// Validates the filesystem paths that make up a REDkit project model.
+/// </summary>
 public sealed class RedkitProjectValidator
 {
+    /// <summary>
+    /// Validates project directories and script roots.
+    /// </summary>
+    /// <param name="project">Project model to validate.</param>
+    /// <returns>A validation report containing informational messages and errors.</returns>
     public ValidationReport Validate(RedkitProject project)
     {
         var messages = new List<ValidationMessage>();
