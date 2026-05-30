@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from witcherscript_langserver.analysis.diagnostics_rules import (
     SemanticDiagnosticSet,
@@ -14,7 +15,9 @@ from witcherscript_langserver.analysis.inheritance import InheritanceIndex
 from witcherscript_langserver.analysis.symbol_table import Scope, Symbol, SymbolTable, TypeReference
 from witcherscript_langserver.indexing.file_index import FileIndex, build_file_index
 from witcherscript_langserver.parser.errors import SyntaxDiagnostic
-from witcherscript_langserver.workspace.config import WorkspaceConfig
+
+if TYPE_CHECKING:
+    from witcherscript_langserver.workspace.config import WorkspaceConfig
 
 
 @dataclass

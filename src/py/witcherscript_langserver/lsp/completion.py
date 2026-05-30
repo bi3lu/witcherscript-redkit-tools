@@ -2,30 +2,37 @@
 
 from lsprotocol import types
 
+from witcherscript_langserver.analysis.name_resolution import NameResolver
 from witcherscript_langserver.analysis.symbol_table import Symbol, SymbolKind
 from witcherscript_langserver.indexing.project_index import ProjectIndex
 from witcherscript_langserver.parser.tokens import KEYWORDS
 
+from .lsp_utils import offset_at_position
 from .symbols import unique_symbols
 
 
-def completions(index: ProjectIndex, uri: str) -> types.CompletionList:
+def completions(
+    index: ProjectIndex,
+    uri: str,
+    source: str = "",
+    position: types.Position | None = None,
+) -> types.CompletionList:
     """Build completion items for a document.
 
     Args:
         index: Project index.
         uri: Current document URI.
+        source: Current document source text.
+        position: Cursor position, when available.
 
     Returns:
         LSP completion list containing keywords and indexed symbols.
     """
     items = [_keyword_item(keyword) for keyword in sorted(KEYWORDS)]
-    file_symbols = tuple(symbol for symbol in index.symbols if symbol.file_uri == uri)
-    project_symbols = index.symbol_table.global_symbols()
+    offset = offset_at_position(source, position) if position is not None else None
+    symbols = NameResolver(index).visible_symbols(uri, offset)
 
-    items.extend(
-        _symbol_item(symbol) for symbol in unique_symbols((*file_symbols, *project_symbols))
-    )
+    items.extend(_symbol_item(symbol) for symbol in unique_symbols(symbols))
     return types.CompletionList(is_incomplete=False, items=items)
 
 
