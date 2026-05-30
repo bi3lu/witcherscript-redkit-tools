@@ -1,3 +1,5 @@
+"""Tests for WitcherScript parser snapshots and recovery behavior."""
+
 import json
 from pathlib import Path
 from typing import Any, cast

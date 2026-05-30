@@ -1,3 +1,5 @@
+"""Tests for WitcherScript language server feature registration and handlers."""
+
 from collections.abc import Callable
 from pathlib import Path
 from typing import cast
@@ -320,6 +322,7 @@ def _capture_published_diagnostics(
     published: list[types.PublishDiagnosticsParams] = []
 
     def capture(params: types.PublishDiagnosticsParams) -> None:
+        """Store published diagnostics for later test assertions."""
         published.append(params)
 
     server.text_document_publish_diagnostics = capture  # type: ignore[method-assign]

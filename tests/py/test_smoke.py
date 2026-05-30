@@ -1,3 +1,5 @@
+"""Smoke tests for package metadata, CLI commands, and server creation."""
+
 import json
 
 from click.testing import CliRunner
