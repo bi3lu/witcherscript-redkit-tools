@@ -3,14 +3,25 @@
 from dataclasses import dataclass
 
 from witcherscript_langserver.parser.ast import (
+    ArrayAccessExpr,
+    AssignmentExpr,
+    BinaryExpr,
+    CallExpr,
     ClassDecl,
     Decl,
+    ErrorExpr,
+    Expr,
     FunctionDecl,
+    GroupingExpr,
+    IdentifierExpr,
     ImportDecl,
+    LiteralExpr,
+    MemberAccessExpr,
     Module,
     ParamDecl,
     StateDecl,
     Statement,
+    UnaryExpr,
     VarDecl,
 )
 from witcherscript_langserver.parser.errors import SyntaxDiagnostic
@@ -58,6 +69,36 @@ CLASS_FLAGS = {
 }
 
 PARAM_FLAGS = {TokenKind.OPTIONAL, TokenKind.OUT}
+ASSIGNMENT_OPERATORS = {
+    TokenKind.EQUAL,
+    TokenKind.PLUS_EQUAL,
+    TokenKind.MINUS_EQUAL,
+    TokenKind.STAR_EQUAL,
+    TokenKind.SLASH_EQUAL,
+    TokenKind.PERCENT_EQUAL,
+}
+BINARY_PRECEDENCE = {
+    TokenKind.PIPE_PIPE: 1,
+    TokenKind.AMPERSAND_AMPERSAND: 2,
+    TokenKind.EQUAL_EQUAL: 3,
+    TokenKind.BANG_EQUAL: 3,
+    TokenKind.LESS: 4,
+    TokenKind.LESS_EQUAL: 4,
+    TokenKind.GREATER: 4,
+    TokenKind.GREATER_EQUAL: 4,
+    TokenKind.PLUS: 5,
+    TokenKind.MINUS: 5,
+    TokenKind.STAR: 6,
+    TokenKind.SLASH: 6,
+    TokenKind.PERCENT: 6,
+}
+UNARY_OPERATORS = {
+    TokenKind.BANG,
+    TokenKind.MINUS,
+    TokenKind.PLUS,
+    TokenKind.PLUS_PLUS,
+    TokenKind.MINUS_MINUS,
+}
 DECLARATION_STARTS = {
     TokenKind.ABSTRACT,
     TokenKind.CLASS,
@@ -82,6 +123,213 @@ DECLARATION_STARTS = {
     TokenKind.TIMER,
     TokenKind.VAR,
 }
+
+
+class ExpressionParser:
+    """Parse expression tokens into a tolerant expression AST."""
+
+    def __init__(self, tokens: list[Token]) -> None:
+        """Initialize the expression parser.
+
+        Args:
+            tokens: Tokens that make up one expression range.
+        """
+        self._tokens = tokens
+        self._current = 0
+
+    def parse(self) -> Expr | None:
+        """Parse an expression.
+
+        Returns:
+            Parsed expression, or ``None`` when no tokens are available.
+        """
+        if self._is_at_end:
+            return None
+
+        return self._parse_expression()
+
+    def _parse_expression(self, min_precedence: int = 0) -> Expr:
+        if self._is_at_end:
+            return ErrorExpr(range=self._previous().range)
+
+        left = self._parse_unary()
+
+        while not self._is_at_end:
+            if self._check_any(ASSIGNMENT_OPERATORS):
+                if min_precedence > 0:
+                    break
+
+                operator = self._advance()
+                value = self._parse_expression()
+                left = AssignmentExpr(
+                    target=left,
+                    operator=operator.lexeme,
+                    value=value,
+                    range=self._range_for_expr(left, value),
+                )
+                continue
+
+            precedence = BINARY_PRECEDENCE.get(self._peek().kind)
+            if precedence is None or precedence < min_precedence:
+                break
+
+            operator = self._advance()
+            right = self._parse_expression(precedence + 1)
+            left = BinaryExpr(
+                left=left,
+                operator=operator.lexeme,
+                right=right,
+                range=self._range_for_expr(left, right),
+            )
+
+        return left
+
+    def _parse_unary(self) -> Expr:
+        if self._check_any(UNARY_OPERATORS):
+            operator = self._advance()
+            operand = self._parse_unary()
+            return UnaryExpr(
+                operator=operator.lexeme,
+                operand=operand,
+                range=SourceRange(start=operator.range.start, end=operand.range.end),
+            )
+
+        return self._parse_postfix()
+
+    def _parse_postfix(self) -> Expr:
+        expression = self._parse_primary()
+
+        while not self._is_at_end:
+            if self._match(TokenKind.LEFT_PAREN):
+                args = self._parse_arguments()
+                end = self._previous()
+                expression = CallExpr(
+                    callee=expression,
+                    args=args,
+                    range=SourceRange(start=expression.range.start, end=end.range.end),
+                )
+                continue
+
+            if self._match(TokenKind.DOT):
+                member = self._consume_identifier()
+                expression = MemberAccessExpr(
+                    target=expression,
+                    member=member.lexeme,
+                    range=SourceRange(start=expression.range.start, end=member.range.end),
+                )
+                continue
+
+            if self._match(TokenKind.LEFT_BRACKET):
+                index = self._parse_expression()
+                end = self._previous()
+                self._match(TokenKind.RIGHT_BRACKET)
+                end = self._previous()
+                expression = ArrayAccessExpr(
+                    target=expression,
+                    index=index,
+                    range=SourceRange(start=expression.range.start, end=end.range.end),
+                )
+                continue
+
+            break
+
+        return expression
+
+    def _parse_arguments(self) -> list[Expr]:
+        args: list[Expr] = []
+
+        if self._check(TokenKind.RIGHT_PAREN):
+            self._advance()
+            return args
+
+        while not self._is_at_end and not self._check(TokenKind.RIGHT_PAREN):
+            args.append(self._parse_expression())
+
+            if not self._match(TokenKind.COMMA):
+                break
+
+        self._match(TokenKind.RIGHT_PAREN)
+        return args
+
+    def _parse_primary(self) -> Expr:
+        if self._is_at_end:
+            return ErrorExpr(range=self._previous().range)
+
+        token = self._advance()
+
+        if token.kind == TokenKind.NUMBER:
+            return LiteralExpr(value=token.lexeme, literal_kind="number", range=token.range)
+
+        if token.kind == TokenKind.STRING:
+            return LiteralExpr(value=token.lexeme, literal_kind="string", range=token.range)
+
+        if token.kind in {TokenKind.TRUE, TokenKind.FALSE}:
+            return LiteralExpr(value=token.lexeme, literal_kind="bool", range=token.range)
+
+        if token.kind == TokenKind.NONE:
+            return LiteralExpr(value=token.lexeme, literal_kind="none", range=token.range)
+
+        if token.kind == TokenKind.NULL:
+            return LiteralExpr(value=token.lexeme, literal_kind="null", range=token.range)
+
+        if token.kind in {
+            TokenKind.IDENTIFIER,
+            TokenKind.PARENT,
+            TokenKind.SUPER,
+        }:
+            return IdentifierExpr(name=token.lexeme, range=token.range)
+
+        if token.kind == TokenKind.LEFT_PAREN:
+            inner = self._parse_expression()
+            self._match(TokenKind.RIGHT_PAREN)
+            return GroupingExpr(
+                expression=inner,
+                range=SourceRange(start=token.range.start, end=self._previous().range.end),
+            )
+
+        return ErrorExpr(range=token.range)
+
+    def _consume_identifier(self) -> Token:
+        if self._check(TokenKind.IDENTIFIER):
+            return self._advance()
+
+        if self._is_at_end:
+            return self._previous()
+
+        return self._advance()
+
+    def _match(self, kind: TokenKind) -> bool:
+        if not self._check(kind):
+            return False
+
+        self._advance()
+        return True
+
+    def _check(self, kind: TokenKind) -> bool:
+        return not self._is_at_end and self._peek().kind == kind
+
+    def _check_any(self, kinds: set[TokenKind]) -> bool:
+        return not self._is_at_end and self._peek().kind in kinds
+
+    @property
+    def _is_at_end(self) -> bool:
+        return self._current >= len(self._tokens)
+
+    def _advance(self) -> Token:
+        if not self._is_at_end:
+            self._current += 1
+
+        return self._previous()
+
+    def _peek(self) -> Token:
+        return self._tokens[self._current]
+
+    def _previous(self) -> Token:
+        return self._tokens[self._current - 1]
+
+    @staticmethod
+    def _range_for_expr(left: Expr, right: Expr) -> SourceRange:
+        return SourceRange(start=left.range.start, end=right.range.end)
 
 
 class Parser:
@@ -331,6 +579,7 @@ class Parser:
         name = self._consume_name("WS2011", "Expected variable name.")
         type_name = None
         initializer_range = None
+        initializer = None
 
         if self._match(TokenKind.COLON):
             type_name = self._parse_type_until(
@@ -344,6 +593,7 @@ class Parser:
             initializer_start = self._peek()
             self._skip_until({TokenKind.SEMICOLON, TokenKind.RIGHT_BRACE})
             initializer_range = self._range(initializer_start, self._previous())
+            initializer = self._parse_expression_range(initializer_range)
 
         self._consume(TokenKind.SEMICOLON, "WS2001", "Expected ';' after variable declaration.")
         return VarDecl(
@@ -352,17 +602,20 @@ class Parser:
             initializer_range=initializer_range,
             range=self._range(start_token, self._previous()),
             flags=flags,
+            initializer=initializer,
         )
 
     def _parse_default_var(self, start: Token | None) -> VarDecl:
         start_token = start or self._previous()
         name = self._consume_name("WS2011", "Expected default property name.")
         initializer_range = None
+        initializer = None
 
         if self._match(TokenKind.EQUAL):
             initializer_start = self._peek()
             self._skip_until({TokenKind.SEMICOLON, TokenKind.RIGHT_BRACE})
             initializer_range = self._range(initializer_start, self._previous())
+            initializer = self._parse_expression_range(initializer_range)
 
         else:
             self._error_at_current("WS2013", "Expected '=' after default property name.")
@@ -374,6 +627,7 @@ class Parser:
             initializer_range=initializer_range,
             range=self._range(start_token, self._previous()),
             flags=["default"],
+            initializer=initializer,
         )
 
     def _parse_body(self) -> tuple[list[VarDecl], list[Statement]]:
@@ -414,16 +668,19 @@ class Parser:
             expression_start = self._peek()
             self._skip_until({TokenKind.SEMICOLON, TokenKind.RIGHT_BRACE})
             expression_range = None
+            expression = None
             if (
                 not self._check_any({TokenKind.SEMICOLON, TokenKind.RIGHT_BRACE})
                 or self._previous() is not start
             ):
                 expression_range = self._range(expression_start, self._previous())
+                expression = self._parse_expression_range(expression_range)
             self._match(TokenKind.SEMICOLON)
             return Statement(
                 kind="return",
                 range=self._range(start, self._previous()),
                 expression_range=expression_range,
+                expression=expression,
             )
 
         if self._match(TokenKind.BREAK):
@@ -435,8 +692,15 @@ class Parser:
             return Statement(kind="continue", range=self._range(start, self._previous()))
 
         self._skip_until({TokenKind.SEMICOLON, TokenKind.RIGHT_BRACE})
+        expression_range = self._range(start, self._previous())
+        expression = self._parse_expression_range(expression_range)
         self._match(TokenKind.SEMICOLON)
-        return Statement(kind="expression", range=self._range(start, self._previous()))
+        return Statement(
+            kind="expression",
+            range=self._range(start, self._previous()),
+            expression_range=expression_range,
+            expression=expression,
+        )
 
     def _parse_control_statement(
         self,
@@ -444,6 +708,9 @@ class Parser:
         start: Token,
     ) -> Statement:
         expression_range = self._parse_parenthesized_range()
+        expression = (
+            self._parse_expression_range(expression_range) if expression_range is not None else None
+        )
 
         if self._match(TokenKind.LEFT_BRACE):
             self._skip_balanced_block()
@@ -454,6 +721,7 @@ class Parser:
             kind=kind,  # type: ignore[arg-type]
             range=self._range(start, self._previous()),
             expression_range=expression_range,
+            expression=expression,
         )
 
     def _parse_parenthesized_range(self) -> SourceRange | None:
@@ -483,6 +751,23 @@ class Parser:
 
         type_name = " ".join(part for part in parts if part)
         return type_name or None
+
+    def _parse_expression_range(self, range_: SourceRange | None) -> Expr | None:
+        if range_ is None:
+            return None
+
+        tokens = [
+            token
+            for token in self._tokens
+            if token.kind != TokenKind.EOF
+            and range_.start.offset <= token.range.start.offset
+            and token.range.end.offset <= range_.end.offset
+        ]
+
+        if not tokens:
+            return None
+
+        return ExpressionParser(tokens).parse()
 
     def _consume_declaration_flags(self) -> tuple[list[str], Token | None]:
         flags: list[str] = []

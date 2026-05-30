@@ -45,11 +45,11 @@
             "statements": [
               {
                 "kind": "expression",
-                "has_expression": false
+                "has_expression": true
               },
               {
                 "kind": "expression",
-                "has_expression": false
+                "has_expression": true
               }
             ]
           }
@@ -86,7 +86,7 @@
           },
           {
             "kind": "expression",
-            "has_expression": false
+            "has_expression": true
           }
         ]
       },
@@ -110,7 +110,7 @@
         "statements": [
           {
             "kind": "expression",
-            "has_expression": false
+            "has_expression": true
           }
         ]
       },
@@ -138,7 +138,7 @@
         "statements": [
           {
             "kind": "expression",
-            "has_expression": false
+            "has_expression": true
           }
         ]
       },
@@ -155,7 +155,7 @@
         "statements": [
           {
             "kind": "expression",
-            "has_expression": false
+            "has_expression": true
           }
         ]
       },
