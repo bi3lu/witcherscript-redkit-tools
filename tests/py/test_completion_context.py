@@ -40,7 +40,7 @@ def test_completion_includes_locals_and_members_inside_function(tmp_path: Path) 
     index = ProjectIndex.build(load_workspace_config(tmp_path))
     uri = (tmp_path / "scripts" / "player.ws").resolve().as_uri()
 
-    labels = _labels(index, uri, source, "        return ", occurrence=3)
+    labels = _labels(index, uri, source, "        return ", occurrence=2)
 
     assert {"value", "local", "ownField", "shared", "inherited", "Base", "Player"} <= labels
     assert "return" in labels
@@ -114,7 +114,6 @@ class Base
 
     function owner() : Player
     {
-        return this;
     }
 }
 

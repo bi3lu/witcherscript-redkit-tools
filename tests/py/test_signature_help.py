@@ -91,7 +91,6 @@ class Base
 {
     function merge(left : int, right : string) : Player
     {
-        return this;
     }
 }
 

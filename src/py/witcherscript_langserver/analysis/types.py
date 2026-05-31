@@ -280,6 +280,15 @@ class TypeLookupService:
         primary = _primary_type_name(type_name)
         return primary is not None and self.resolve_type(primary) is not None
 
+    @property
+    def symbol_table(self) -> SymbolTable:
+        """Return the symbol table backing this lookup service.
+
+        Returns:
+            Project-wide symbol table.
+        """
+        return self._symbol_table
+
     def _type_of_identifier(self, name: str, context: TypeLookupContext) -> str | None:
         if name == "this":
             return context.container_name

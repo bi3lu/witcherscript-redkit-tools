@@ -61,7 +61,7 @@ def test_resolver_handles_this_and_type_references(tmp_path: Path) -> None:
     resolver = NameResolver(index)
     uri = (tmp_path / "scripts" / "player.ws").resolve().as_uri()
 
-    this_result = resolver.resolve(uri, _offset_of(source, "this;", occurrence=2), "this")
+    this_result = resolver.resolve(uri, _offset_of(source, "this;"), "this")
     type_result = resolver.resolve(uri, _offset_of(source, ": Base"), "Base")
 
     assert this_result is not None
@@ -84,7 +84,7 @@ def test_lsp_features_use_context_aware_resolution(tmp_path: Path) -> None:
 
     local_definition = definition(index, source, uri, _position_of(source, "value;"))
     inherited_hover = hover(index, source, uri, _position_of(source, "shared;"))
-    completion = completions(index, uri, source, _position_of(source, "return", occurrence=3))
+    completion = completions(index, uri, source, _position_of(source, "return", occurrence=2))
     labels = {item.label for item in completion.items}
 
     assert local_definition is not None
@@ -128,7 +128,6 @@ class Base
 
     function owner() : Player
     {
-        return this;
     }
 }
 
