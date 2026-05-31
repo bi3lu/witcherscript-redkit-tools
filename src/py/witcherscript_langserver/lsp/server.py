@@ -14,6 +14,7 @@ from .definition import definition
 from .diagnostics import collect_diagnostics
 from .hover import hover
 from .references import references
+from .signature_help import signature_help
 from .symbols import document_symbols, workspace_symbols
 
 REFRESH_INDEX_COMMAND = "witcherscript.refreshIndex"
@@ -269,6 +270,31 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
             ls.workspace_state.index,
             normalize_file_uri(uri),
             ls.document_text(uri),
+            params.position,
+        )
+
+    @server.feature(
+        types.TEXT_DOCUMENT_SIGNATURE_HELP,
+        types.SignatureHelpOptions(trigger_characters=["(", ","], retrigger_characters=[","]),
+    )
+    def signature_help_info(
+        ls: WitcherScriptLanguageServer,
+        params: types.SignatureHelpParams,
+    ) -> types.SignatureHelp | None:
+        """Return signature help for the active call expression.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Signature help request parameters.
+
+        Returns:
+            Signature help, when the cursor is inside a known call.
+        """
+        uri = params.text_document.uri
+        return signature_help(
+            ls.workspace_state.index,
+            ls.document_text(uri),
+            normalize_file_uri(uri),
             params.position,
         )
 
