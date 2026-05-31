@@ -107,11 +107,13 @@ class MemberAccessExpr:
     Attributes:
         target: Target expression before the dot.
         member: Accessed member name.
+        member_range: Source range covered by the member name.
         range: Source range covered by the expression.
     """
 
     target: Expr
     member: str
+    member_range: SourceRange
     range: SourceRange
 
 

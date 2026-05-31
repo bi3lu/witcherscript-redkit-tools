@@ -9,6 +9,7 @@ from lsprotocol import types
 
 from witcherscript_langserver.analysis.name_resolution import NameResolver
 from witcherscript_langserver.analysis.symbol_table import Symbol, SymbolKind
+from witcherscript_langserver.analysis.types import TypeLookupContext, TypeLookupService
 from witcherscript_langserver.indexing.project_index import ProjectIndex
 
 from .lsp_utils import offset_at_position
@@ -68,7 +69,7 @@ class CompletionContext:
 
     Attributes:
         kind: Completion context kind.
-        receiver: Optional receiver expression for member completion.
+        receiver: Optional receiver expression source for member completion.
     """
 
     kind: CompletionContextKind
@@ -116,9 +117,9 @@ def _completion_context(source: str, offset: int | None) -> CompletionContext:
     if re.search(r"\bimport\s+[\"']?[^\"';]*$", line_prefix):
         return CompletionContext(CompletionContextKind.IMPORT)
 
-    member_match = re.search(r"([A-Za-z_][A-Za-z0-9_]*|this)\s*\.\s*[A-Za-z_0-9]*$", line_prefix)
-    if member_match is not None:
-        return CompletionContext(CompletionContextKind.MEMBER, receiver=member_match.group(1))
+    member_receiver = _member_receiver_expression(line_prefix)
+    if member_receiver is not None:
+        return CompletionContext(CompletionContextKind.MEMBER, receiver=member_receiver)
 
     if re.search(r"\bextends\s+[A-Za-z_0-9]*$", line_prefix):
         return CompletionContext(CompletionContextKind.EXTENDS)
@@ -204,25 +205,65 @@ def _member_symbols(
     offset: int | None,
     receiver: str | None,
 ) -> tuple[Symbol, ...]:
-    _ = source
-
     if receiver is None or offset is None:
         return ()
 
     context = resolver.context(uri, offset, "")
+    lookup = TypeLookupService(resolver.symbol_table)
+    type_name = lookup.type_of_expression_source(
+        receiver,
+        TypeLookupContext(
+            file_uri=uri,
+            offset=offset,
+            function_name=context.function_name,
+            container_name=context.container_name,
+        ),
+    )
 
-    if receiver == "this":
-        if context.container_name is None:
-            return ()
-
-        return resolver.members_for_type(context.container_name)
-
-    resolved = resolver.resolve(uri, offset, receiver)
-
-    if resolved is None or resolved.symbol.type_name is None:
+    if type_name is None:
         return ()
 
-    return resolver.members_for_type(resolved.symbol.type_name)
+    return lookup.members_for_type(type_name)
+
+
+def _member_receiver_expression(line_prefix: str) -> str | None:
+    stripped = line_prefix.rstrip()
+    end = len(stripped)
+
+    while end > 0 and re.fullmatch(r"[A-Za-z_0-9]", stripped[end - 1]) is not None:
+        end -= 1
+
+    dot_index = end - 1
+    if dot_index < 0 or stripped[dot_index] != ".":
+        return None
+
+    receiver_prefix = stripped[:dot_index].rstrip()
+    if not receiver_prefix:
+        return None
+
+    start = _receiver_start(receiver_prefix)
+    receiver = receiver_prefix[start:].strip()
+    return receiver or None
+
+
+def _receiver_start(text: str) -> int:
+    depth = 0
+
+    for index in range(len(text) - 1, -1, -1):
+        char = text[index]
+
+        if char in ")]":
+            depth += 1
+            continue
+
+        if char in "([":
+            depth = max(depth - 1, 0)
+            continue
+
+        if depth == 0 and char in " \t=,;{":
+            return index + 1
+
+    return 0
 
 
 def _import_items(index: ProjectIndex, current_uri: str) -> list[types.CompletionItem]:

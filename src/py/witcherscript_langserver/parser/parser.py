@@ -215,6 +215,7 @@ class ExpressionParser:
                 expression = MemberAccessExpr(
                     target=expression,
                     member=member.lexeme,
+                    member_range=member.range,
                     range=SourceRange(start=expression.range.start, end=member.range.end),
                 )
                 continue

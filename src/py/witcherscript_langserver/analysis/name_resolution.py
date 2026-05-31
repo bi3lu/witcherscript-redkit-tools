@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from witcherscript_langserver.analysis.symbol_table import Scope, ScopeKind, Symbol, SymbolKind
+from witcherscript_langserver.analysis.symbol_table import (
+    Scope,
+    ScopeKind,
+    Symbol,
+    SymbolKind,
+    SymbolTable,
+)
 from witcherscript_langserver.indexing.project_index import ProjectIndex
 from witcherscript_langserver.parser.tokens import SourceRange
 
@@ -132,6 +138,15 @@ class NameResolver:
             Fields, functions, and events visible on the type.
         """
         return self._members_for_type(type_name)
+
+    @property
+    def symbol_table(self) -> SymbolTable:
+        """Return the project symbol table used by this resolver.
+
+        Returns:
+            Project-wide symbol table.
+        """
+        return self._index.symbol_table
 
     def resolve_type(self, name: str) -> Symbol | None:
         """Resolve a class or state type by name.

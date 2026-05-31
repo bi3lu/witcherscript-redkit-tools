@@ -6,6 +6,7 @@ from lsprotocol import types
 
 from witcherscript_langserver.analysis.name_resolution import NameResolver
 from witcherscript_langserver.analysis.symbol_table import SymbolKind
+from witcherscript_langserver.analysis.types import TypeLookupContext, TypeLookupService
 from witcherscript_langserver.config import load_workspace_config
 from witcherscript_langserver.indexing.project_index import ProjectIndex
 from witcherscript_langserver.lsp.completion import completions
@@ -60,7 +61,7 @@ def test_resolver_handles_this_and_type_references(tmp_path: Path) -> None:
     resolver = NameResolver(index)
     uri = (tmp_path / "scripts" / "player.ws").resolve().as_uri()
 
-    this_result = resolver.resolve(uri, _offset_of(source, "this;"), "this")
+    this_result = resolver.resolve(uri, _offset_of(source, "this;", occurrence=2), "this")
     type_result = resolver.resolve(uri, _offset_of(source, ": Base"), "Base")
 
     assert this_result is not None
@@ -83,7 +84,7 @@ def test_lsp_features_use_context_aware_resolution(tmp_path: Path) -> None:
 
     local_definition = definition(index, source, uri, _position_of(source, "value;"))
     inherited_hover = hover(index, source, uri, _position_of(source, "shared;"))
-    completion = completions(index, uri, source, _position_of(source, "return", occurrence=2))
+    completion = completions(index, uri, source, _position_of(source, "return", occurrence=3))
     labels = {item.label for item in completion.items}
 
     assert local_definition is not None
@@ -92,6 +93,24 @@ def test_lsp_features_use_context_aware_resolution(tmp_path: Path) -> None:
     assert isinstance(inherited_hover.contents, types.MarkupContent)
     assert "shared: int" in inherited_hover.contents.value
     assert {"value", "local", "ownField", "shared", "inherited", "Base", "Player"} <= labels
+
+
+def test_type_lookup_resolves_member_chains_and_call_return_types(tmp_path: Path) -> None:
+    source = _write_resolution_workspace(tmp_path)
+    index = ProjectIndex.build(load_workspace_config(tmp_path))
+    uri = (tmp_path / "scripts" / "player.ws").resolve().as_uri()
+    lookup = TypeLookupService(index.symbol_table)
+    context = TypeLookupContext(
+        file_uri=uri,
+        offset=_offset_of(source, "local.owner().ownField"),
+        function_name="run",
+        container_name="Player",
+    )
+
+    assert lookup.type_of_expression_source("local.owner()", context) == "Player"
+    assert lookup.type_of_expression_source("local.owner().ownField", context) == "string"
+    assert lookup.member_for_type("Player", "shared") is not None
+    assert lookup.member_for_type("Player", "missing") is None
 
 
 def _write_resolution_workspace(root: Path) -> str:
@@ -105,6 +124,11 @@ class Base
     function inherited() : int
     {
         return 0;
+    }
+
+    function owner() : Player
+    {
+        return this;
     }
 }
 
@@ -121,6 +145,7 @@ class Player extends Base
         ownField;
         shared;
         inherited();
+        local.owner().ownField;
         this;
         return local;
     }
