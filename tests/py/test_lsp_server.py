@@ -28,6 +28,7 @@ def test_server_registers_minimal_lsp_features() -> None:
     assert types.WORKSPACE_SYMBOL in features
     assert types.TEXT_DOCUMENT_DEFINITION in features
     assert types.TEXT_DOCUMENT_COMPLETION in features
+    assert types.TEXT_DOCUMENT_SIGNATURE_HELP in features
     assert types.TEXT_DOCUMENT_HOVER in features
     assert types.TEXT_DOCUMENT_REFERENCES in features
 

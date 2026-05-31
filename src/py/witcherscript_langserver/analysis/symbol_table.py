@@ -91,6 +91,19 @@ class TypeReference:
 
 
 @dataclass(frozen=True)
+class CallableParameter:
+    """Callable parameter data used for signature help.
+
+    Attributes:
+        name: Parameter name.
+        type_name: Parameter type name, when declared.
+    """
+
+    name: str
+    type_name: str | None
+
+
+@dataclass(frozen=True)
 class CallableSignature:
     """Callable declaration data used for call validation.
 
@@ -99,14 +112,25 @@ class CallableSignature:
         file_uri: LSP file URI where the callable is declared.
         range: Source range covered by the declaration.
         container_name: Optional containing class or state name.
-        parameter_count: Number of declared parameters.
+        parameters: Declared parameters in source order.
+        return_type: Declared return type, when one is present.
     """
 
     name: str
     file_uri: str
     range: SourceRange
     container_name: str | None
-    parameter_count: int
+    parameters: tuple[CallableParameter, ...]
+    return_type: str | None
+
+    @property
+    def parameter_count(self) -> int:
+        """Return the number of declared parameters.
+
+        Returns:
+            Parameter count used by call diagnostics.
+        """
+        return len(self.parameters)
 
 
 @dataclass(frozen=True)
