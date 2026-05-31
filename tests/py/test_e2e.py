@@ -102,14 +102,15 @@ def test_basic_project_completion_and_definition() -> None:
     completion = cast("types.CompletionList", completion_result)
     labels = {item.label for item in completion.items}
     assert {
-        "class",
-        "function",
+        "return",
+        "var",
         "BaseActor",
         "PlayerCharacter",
         "QuestState",
         "makeBase",
         "local",
     } <= labels
+    assert "class" not in labels
 
     definition_result = _feature(server, types.TEXT_DOCUMENT_DEFINITION)(
         types.DefinitionParams(

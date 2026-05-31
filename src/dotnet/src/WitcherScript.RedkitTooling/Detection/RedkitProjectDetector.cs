@@ -132,7 +132,7 @@ public sealed class RedkitProjectDetector
         foreach (var directory in Directory.GetDirectories(root).Order(StringComparer.OrdinalIgnoreCase))
         {
             var contentDirectory = Path.Combine(directory, "content");
-            
+
             if (!Directory.Exists(contentDirectory))
             {
                 continue;

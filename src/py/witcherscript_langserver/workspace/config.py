@@ -7,6 +7,9 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from witcherscript_langserver.parser.errors import SyntaxDiagnostic
+from witcherscript_langserver.parser.tokens import SourcePosition, SourceRange
+
 CONFIG_FILE_NAME = "witcherscript.toml"
 DEFAULT_SOURCE_ROOTS = (".",)
 DEFAULT_EXCLUDE_PATTERNS = (
@@ -137,6 +140,65 @@ def load_workspace_config(root_path: Path) -> WorkspaceConfig:
     )
 
 
+def validate_workspace_config(config: WorkspaceConfig) -> tuple[SyntaxDiagnostic, ...]:
+    """Validate resolved workspace paths from ``witcherscript.toml``.
+
+    Args:
+        config: Workspace configuration to validate.
+
+    Returns:
+        Project configuration diagnostics that can be published through LSP.
+    """
+    if config.config_path is None:
+        return ()
+
+    diagnostics: list[SyntaxDiagnostic] = []
+
+    for root in config.scripts.source_roots:
+        if not root.exists():
+            diagnostics.append(
+                _config_diagnostic("WS4001", f"Configured source root does not exist: {root}")
+            )
+
+    for root in config.scripts.vanilla_roots:
+        if not root.exists():
+            diagnostics.append(
+                _config_diagnostic("WS4002", f"Configured vanilla root does not exist: {root}")
+            )
+
+    for label, path in (
+        ("game_directory", config.redkit.game_directory),
+        ("redkit_directory", config.redkit.redkit_directory),
+        ("project_directory", config.redkit.project_directory),
+    ):
+        if path is not None and not path.exists():
+            diagnostics.append(
+                _config_diagnostic("WS4003", f"Configured {label} does not exist: {path}")
+            )
+
+    return tuple(diagnostics)
+
+
+def invalid_toml_diagnostic(error: tomllib.TOMLDecodeError) -> SyntaxDiagnostic:
+    """Build a config diagnostic for invalid TOML syntax.
+
+    Args:
+        error: TOML parser exception raised while loading ``witcherscript.toml``.
+
+    Returns:
+        LSP-ready diagnostic pointing at the reported parser location.
+    """
+    lineno = getattr(error, "lineno", 1)
+    colno = getattr(error, "colno", 1)
+    line = max(lineno - 1, 0) if isinstance(lineno, int) else 0
+    column = max(colno - 1, 0) if isinstance(colno, int) else 0
+    return SyntaxDiagnostic(
+        "WS4000",
+        f"Invalid witcherscript.toml: {str(error).split(' (at line', 1)[0]}",
+        _range(line, column),
+    )
+
+
 def _default_config(root: Path) -> WorkspaceConfig:
     return WorkspaceConfig(
         root_path=root,
@@ -190,3 +252,13 @@ def _string_value(value: object, default: str) -> str:
         return value
 
     return default
+
+
+def _config_diagnostic(code: str, message: str) -> SyntaxDiagnostic:
+    return SyntaxDiagnostic(code, message, _range(0, 0))
+
+
+def _range(line: int, character: int) -> SourceRange:
+    start = SourcePosition(line, character, 0)
+    end = SourcePosition(line, character + 1, 1)
+    return SourceRange(start, end)

@@ -2,10 +2,11 @@
 
 from lsprotocol import types
 
+from witcherscript_langserver.analysis.name_resolution import NameResolver
 from witcherscript_langserver.indexing.project_index import ProjectIndex
 
-from .lsp_utils import word_at_position
-from .symbols import find_symbol, lsp_location
+from .lsp_utils import offset_at_position, word_at_position
+from .symbols import lsp_location
 
 
 def definition(
@@ -26,13 +27,14 @@ def definition(
         Definition location, or ``None`` when unresolved.
     """
     word = word_at_position(source, position)
+    offset = offset_at_position(source, position)
 
-    if word is None:
+    if word is None or offset is None:
         return None
 
-    symbol = find_symbol(index.symbol_table, word, current_file_uri=uri)
+    result = NameResolver(index).resolve(uri, offset, word)
 
-    if symbol is None:
+    if result is None:
         return None
 
-    return lsp_location(symbol)
+    return lsp_location(result.symbol)

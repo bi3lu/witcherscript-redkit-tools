@@ -1,0 +1,199 @@
+{
+  "diagnostics": [],
+  "module": {
+    "declarations": [
+      {
+        "base_name": null,
+        "flags": [],
+        "kind": "ClassDecl",
+        "members": [
+          {
+            "flags": [],
+            "has_initializer": true,
+            "initializer": {
+              "kind": "LiteralExpr",
+              "literal_kind": "string",
+              "value": "\"wolf\""
+            },
+            "kind": "VarDecl",
+            "name": "title",
+            "type_name": "string"
+          },
+          {
+            "flags": [],
+            "has_initializer": true,
+            "initializer": {
+              "kind": "BinaryExpr",
+              "left": {
+                "kind": "LiteralExpr",
+                "literal_kind": "number",
+                "value": "1"
+              },
+              "operator": "+",
+              "right": {
+                "kind": "BinaryExpr",
+                "left": {
+                  "kind": "LiteralExpr",
+                  "literal_kind": "number",
+                  "value": "2"
+                },
+                "operator": "*",
+                "right": {
+                  "kind": "LiteralExpr",
+                  "literal_kind": "number",
+                  "value": "3"
+                }
+              }
+            },
+            "kind": "VarDecl",
+            "name": "count",
+            "type_name": "int"
+          },
+          {
+            "flags": [],
+            "has_body": true,
+            "kind": "FunctionDecl",
+            "locals": [
+              {
+                "flags": [],
+                "has_initializer": true,
+                "initializer": {
+                  "kind": "LiteralExpr",
+                  "literal_kind": "number",
+                  "value": "0"
+                },
+                "kind": "VarDecl",
+                "name": "index",
+                "type_name": "int"
+              }
+            ],
+            "name": "run",
+            "params": [
+              {
+                "flags": [],
+                "name": "player",
+                "type_name": "Player"
+              }
+            ],
+            "return_type": "int",
+            "statements": [
+              {
+                "expression": null,
+                "has_expression": false,
+                "kind": "var"
+              },
+              {
+                "expression": {
+                  "kind": "AssignmentExpr",
+                  "operator": "=",
+                  "target": {
+                    "kind": "IdentifierExpr",
+                    "name": "index"
+                  },
+                  "value": {
+                    "kind": "BinaryExpr",
+                    "left": {
+                      "kind": "IdentifierExpr",
+                      "name": "index"
+                    },
+                    "operator": "+",
+                    "right": {
+                      "kind": "LiteralExpr",
+                      "literal_kind": "number",
+                      "value": "1"
+                    }
+                  }
+                },
+                "has_expression": true,
+                "kind": "expression"
+              },
+              {
+                "expression": {
+                  "kind": "MemberAccessExpr",
+                  "member": "name",
+                  "target": {
+                    "args": [
+                      {
+                        "kind": "IdentifierExpr",
+                        "name": "index"
+                      }
+                    ],
+                    "callee": {
+                      "kind": "MemberAccessExpr",
+                      "member": "GetItem",
+                      "target": {
+                        "kind": "MemberAccessExpr",
+                        "member": "inventory",
+                        "target": {
+                          "kind": "IdentifierExpr",
+                          "name": "player"
+                        }
+                      }
+                    },
+                    "kind": "CallExpr"
+                  }
+                },
+                "has_expression": true,
+                "kind": "expression"
+              },
+              {
+                "expression": {
+                  "kind": "BinaryExpr",
+                  "left": {
+                    "kind": "UnaryExpr",
+                    "operand": {
+                      "expression": {
+                        "kind": "BinaryExpr",
+                        "left": {
+                          "kind": "IdentifierExpr",
+                          "name": "index"
+                        },
+                        "operator": ">",
+                        "right": {
+                          "kind": "LiteralExpr",
+                          "literal_kind": "number",
+                          "value": "3"
+                        }
+                      },
+                      "kind": "GroupingExpr"
+                    },
+                    "operator": "!"
+                  },
+                  "operator": "&&",
+                  "right": {
+                    "kind": "BinaryExpr",
+                    "left": {
+                      "index": {
+                        "kind": "IdentifierExpr",
+                        "name": "index"
+                      },
+                      "kind": "ArrayAccessExpr",
+                      "target": {
+                        "kind": "MemberAccessExpr",
+                        "member": "items",
+                        "target": {
+                          "kind": "IdentifierExpr",
+                          "name": "player"
+                        }
+                      }
+                    },
+                    "operator": "!=",
+                    "right": {
+                      "kind": "LiteralExpr",
+                      "literal_kind": "none",
+                      "value": "none"
+                    }
+                  }
+                },
+                "has_expression": true,
+                "kind": "return"
+              }
+            ]
+          }
+        ],
+        "name": "ExpressionShowcase"
+      }
+    ],
+    "imports": []
+  }
+}

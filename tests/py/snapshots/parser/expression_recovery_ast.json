@@ -1,0 +1,79 @@
+{
+  "diagnostics": [],
+  "module": {
+    "declarations": [
+      {
+        "base_name": null,
+        "flags": [],
+        "kind": "ClassDecl",
+        "members": [
+          {
+            "flags": [],
+            "has_body": true,
+            "kind": "FunctionDecl",
+            "locals": [
+              {
+                "flags": [],
+                "has_initializer": true,
+                "initializer": {
+                  "kind": "BinaryExpr",
+                  "left": {
+                    "kind": "LiteralExpr",
+                    "literal_kind": "number",
+                    "value": "1"
+                  },
+                  "operator": "+",
+                  "right": {
+                    "kind": "ErrorExpr"
+                  }
+                },
+                "kind": "VarDecl",
+                "name": "index",
+                "type_name": "int"
+              }
+            ],
+            "name": "run",
+            "params": [],
+            "return_type": "int",
+            "statements": [
+              {
+                "expression": null,
+                "has_expression": false,
+                "kind": "var"
+              },
+              {
+                "expression": {
+                  "kind": "BinaryExpr",
+                  "left": {
+                    "kind": "IdentifierExpr",
+                    "name": "index"
+                  },
+                  "operator": "+",
+                  "right": {
+                    "kind": "ErrorExpr"
+                  }
+                },
+                "has_expression": true,
+                "kind": "return"
+              }
+            ]
+          },
+          {
+            "flags": [],
+            "has_initializer": true,
+            "initializer": {
+              "kind": "LiteralExpr",
+              "literal_kind": "number",
+              "value": "2"
+            },
+            "kind": "VarDecl",
+            "name": "afterBrokenExpression",
+            "type_name": "int"
+          }
+        ],
+        "name": "BrokenExpressions"
+      }
+    ],
+    "imports": []
+  }
+}

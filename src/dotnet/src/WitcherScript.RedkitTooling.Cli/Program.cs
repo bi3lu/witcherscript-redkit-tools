@@ -66,8 +66,20 @@ internal static class Program
         var detector = new RedkitProjectDetector();
         var project = detector.Detect(options.ToDetectionOptions());
         var configPath = Path.Combine(project.ProjectDirectory, "witcherscript.toml");
-        new WitcherScriptConfigWriter().WriteToFile(project, configPath, options.Force);
-        Console.WriteLine(configPath);
+        var result = new WitcherScriptConfigWriter().WriteToFile(project, configPath, options.Force);
+
+        if (options.Json)
+        {
+            Console.WriteLine(JsonSerializer.Serialize(result, JsonOptions));
+            return 0;
+        }
+
+        Console.WriteLine($"Wrote WitcherScript configuration: {result.Path}");
+        if (result.BackupPath is not null)
+        {
+            Console.WriteLine($"Backed up previous configuration: {result.BackupPath}");
+        }
+
         return 0;
     }
 
@@ -85,10 +97,21 @@ internal static class Program
         var project = detector.Detect(options.ToDetectionOptions());
         var report = new RedkitProjectValidator().Validate(project);
 
+        if (options.Json)
+        {
+            Console.WriteLine(JsonSerializer.Serialize(report, JsonOptions));
+            return report.IsValid ? 0 : 1;
+        }
+
+        Console.WriteLine("REDkit project validation");
+        Console.WriteLine($"Project: {project.ProjectDirectory}");
+        Console.WriteLine($"Status: {(report.IsValid ? "OK" : "FAILED")}");
+        Console.WriteLine();
+
         foreach (var message in report.Messages)
         {
-            var path = string.IsNullOrWhiteSpace(message.Path) ? string.Empty : $" {message.Path}";
-            Console.WriteLine($"{message.Severity} {message.Code}: {message.Message}{path}");
+            var path = string.IsNullOrWhiteSpace(message.Path) ? string.Empty : $" ({message.Path})";
+            Console.WriteLine($"[{message.Severity}] {message.Code}: {message.Message}{path}");
         }
 
         return report.IsValid ? 0 : 1;
@@ -103,7 +126,16 @@ internal static class Program
         var result = await new ScriptCompilerRunner(new ProcessRunner())
             .RecompileAsync(project, executable)
             .ConfigureAwait(false);
+        var summary = new RecompileLogParser().Parse(result);
+
+        if (options.Json)
+        {
+            Console.WriteLine(JsonSerializer.Serialize(summary, JsonOptions));
+            return result.ExitCode;
+        }
+
         PrintProcessResult(result);
+        PrintRecompileSummary(summary);
         return result.ExitCode;
     }
 
@@ -148,6 +180,30 @@ internal static class Program
         }
     }
 
+    private static void PrintRecompileSummary(RecompileLogSummary summary)
+    {
+        Console.WriteLine();
+        Console.WriteLine(
+            $"Recompile summary: exit {summary.ExitCode}, {summary.ErrorCount} error(s), {summary.WarningCount} warning(s)."
+        );
+
+        foreach (var entry in summary.Entries)
+        {
+            var location = entry.File is null ? string.Empty : $" {entry.File}";
+            if (entry.Line is not null)
+            {
+                location += $":{entry.Line}";
+            }
+
+            if (entry.Column is not null)
+            {
+                location += $":{entry.Column}";
+            }
+
+            Console.WriteLine($"[{entry.Severity}] {entry.Code}:{location} {entry.Message}");
+        }
+    }
+
     private static int UnknownCommand(string command)
     {
         Console.Error.WriteLine($"Unknown command: {command}");
@@ -174,6 +230,7 @@ internal static class Program
               --game-dir <path>
               --redkit-dir <path>
               --force
+              --json
             """
         );
     }
@@ -184,6 +241,7 @@ internal static class Program
         string? RedkitDirectory,
         string? Executable,
         bool Force,
+        bool Json,
         IReadOnlyList<string> Arguments
     )
     {
@@ -199,6 +257,7 @@ internal static class Program
             string? redkitDirectory = null;
             string? executable = null;
             var force = false;
+            var json = false;
             var passThrough = new List<string>();
 
             for (var index = 0; index < args.Length; index++)
@@ -227,6 +286,9 @@ internal static class Program
                     case "--force":
                         force = true;
                         break;
+                    case "--json":
+                        json = true;
+                        break;
                     default:
                         passThrough.Add(arg);
                         break;
@@ -239,6 +301,7 @@ internal static class Program
                 redkitDirectory,
                 executable,
                 force,
+                json,
                 passThrough
             );
         }

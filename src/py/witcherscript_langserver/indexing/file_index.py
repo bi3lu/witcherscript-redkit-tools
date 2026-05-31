@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from witcherscript_langserver.analysis.symbol_table import (
+    CallableParameter,
     CallableSignature,
     Scope,
     ScopeKind,
@@ -392,7 +393,11 @@ def _declaration_callable_signatures(
                 file_uri=file_uri,
                 range=declaration.range,
                 container_name=container_name,
-                parameter_count=len(declaration.params),
+                parameters=tuple(
+                    CallableParameter(name=param.name, type_name=param.type_name)
+                    for param in declaration.params
+                ),
+                return_type=declaration.return_type,
             )
         ]
 

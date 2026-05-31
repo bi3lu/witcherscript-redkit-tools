@@ -6,6 +6,7 @@ from pathlib import Path
 
 import click
 
+from witcherscript_langserver.corpus import run_corpus
 from witcherscript_langserver.parser.parser import parse as parse_source
 
 
@@ -35,6 +36,29 @@ def parse(path: Path) -> None:
             sort_keys=True,
         )
     )
+
+
+@main.command()
+@click.argument(
+    "paths",
+    nargs=-1,
+    required=True,
+    type=click.Path(exists=True, path_type=Path),
+)
+@click.option(
+    "--no-semantic",
+    is_flag=True,
+    help="Only run lexer and parser diagnostics.",
+)
+def corpus(paths: tuple[Path, ...], no_semantic: bool) -> None:
+    """Analyze a WitcherScript corpus and print a diagnostics report.
+
+    Args:
+        paths: Files or directories to scan for WitcherScript sources.
+        no_semantic: Whether semantic diagnostics should be skipped.
+    """
+    report = run_corpus(paths, include_semantic=not no_semantic)
+    click.echo(json.dumps(_json_ready(asdict(report)), indent=2, sort_keys=True))
 
 
 @main.command()
