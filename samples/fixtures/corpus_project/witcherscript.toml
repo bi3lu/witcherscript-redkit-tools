@@ -1,0 +1,6 @@
+[project]
+name = "CorpusFixture"
+
+[scripts]
+source_roots = ["scripts"]
+exclude = ["**/bin/**", "**/.cache/**"]
