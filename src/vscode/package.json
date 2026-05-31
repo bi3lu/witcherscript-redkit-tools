@@ -15,14 +15,16 @@
     "onLanguage:witcherscript",
     "onCommand:witcherscript.refreshIndex",
     "onCommand:witcherscript.redkitInit",
-    "onCommand:witcherscript.restartLanguageServer"
+    "onCommand:witcherscript.restartLanguageServer",
+    "onCommand:witcherscript.showOutput"
   ],
   "main": "./out/extension.js",
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "check": "tsc --noEmit -p ./",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "smoke": "npm run lint && npm run check && npm run compile"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"
@@ -61,15 +63,29 @@
       {
         "command": "witcherscript.restartLanguageServer",
         "title": "WitcherScript: Restart Language Server"
+      },
+      {
+        "command": "witcherscript.showOutput",
+        "title": "WitcherScript: Show Output Logs"
       }
     ],
     "configuration": {
       "title": "WitcherScript REDkit Tools",
       "properties": {
+        "witcherscript.workspace.root": {
+          "type": "string",
+          "default": "${workspaceFolder}",
+          "description": "Workspace root URI/path used by the language client. Supports ${workspaceFolder} and ${extensionPath}."
+        },
+        "witcherscript.languageServer.path": {
+          "type": "string",
+          "default": "",
+          "description": "Optional executable path used instead of witcherscript.languageServer.command. Leave empty to use the command setting."
+        },
         "witcherscript.languageServer.command": {
           "type": "string",
           "default": "uv",
-          "description": "Command used to start the WitcherScript language server."
+          "description": "Command used to start the WitcherScript language server when languageServer.path is empty."
         },
         "witcherscript.languageServer.args": {
           "type": "array",

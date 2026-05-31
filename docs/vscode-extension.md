@@ -7,8 +7,11 @@ The VS Code extension under `src/vscode` is a lightweight client for exercising 
 - Activates for `.ws` files through the `witcherscript` language id.
 - Starts the Python language server over standard input and output.
 - Watches `.ws` files and `witcherscript.toml` for workspace changes.
+- Shows LSP status in the VS Code status bar.
+- Exposes `WitcherScript: Show Output Logs`.
 - Exposes `WitcherScript: Refresh Project Index`.
 - Exposes `WitcherScript: Initialize REDkit Config`.
+- Exposes `WitcherScript: Restart Language Server`.
 - Provides Extension Host debug configuration.
 
 ## Local Setup
@@ -29,6 +32,8 @@ The extension starts the server with these defaults:
 
 ```json
 {
+  "witcherscript.workspace.root": "${workspaceFolder}",
+  "witcherscript.languageServer.path": "",
   "witcherscript.languageServer.command": "uv",
   "witcherscript.languageServer.args": ["run", "witcherscript-lsp"],
   "witcherscript.languageServer.cwd": "${extensionPath}/../.."
@@ -36,6 +41,26 @@ The extension starts the server with these defaults:
 ```
 
 Use absolute paths, `${extensionPath}`, or `${workspaceFolder}` when testing against projects outside this repository.
+
+Set `witcherscript.languageServer.path` to a concrete executable when you do not want to rely on `uv` from `PATH`. For example:
+
+```json
+{
+  "witcherscript.languageServer.path": "/absolute/path/to/.venv/bin/witcherscript-lsp",
+  "witcherscript.languageServer.args": []
+}
+```
+
+The status bar item opens the WitcherScript output channel. Startup failures also offer actions for opening logs or the language server settings.
+
+## Daily Debugging Workflow
+
+1. Open `src/vscode` in VS Code.
+2. Run `npm install` and `npm run compile`.
+3. Start `Run WitcherScript Extension`.
+4. Use the debug host status bar item to inspect LSP state.
+5. Run `WitcherScript: Restart Language Server` after Python or configuration changes.
+6. Run `WitcherScript: Refresh Project Index` after external file changes.
 
 ## REDkit Tooling Settings
 
