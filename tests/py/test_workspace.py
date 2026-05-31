@@ -6,6 +6,7 @@ from witcherscript_langserver.analysis.symbol_table import SymbolKind
 from witcherscript_langserver.config import load_workspace_config
 from witcherscript_langserver.indexing.project_index import ProjectIndex, scan_script_files
 from witcherscript_langserver.workspace import WorkspaceState, normalize_file_uri, path_from_uri
+from witcherscript_langserver.workspace.config import validate_workspace_config
 
 
 def test_load_workspace_config_resolves_toml_paths(tmp_path: Path) -> None:
@@ -59,6 +60,7 @@ def test_workspace_state_initializes_from_root_uri(tmp_path: Path) -> None:
     assert workspace.root_path == tmp_path
     assert workspace.config is not None
     assert set(workspace.index.files) == {files["player"], files["quest"], files["vanilla"]}
+    assert workspace.config_diagnostics == {(tmp_path / "witcherscript.toml").as_uri(): []}
 
 
 def test_workspace_state_updates_and_removes_file(tmp_path: Path) -> None:
@@ -80,6 +82,40 @@ def test_path_from_uri_handles_local_file_uri(tmp_path: Path) -> None:
     assert normalize_file_uri(path.as_uri()) == path.resolve().as_uri()
     assert path_from_uri("untitled:Scratch.ws") is None
     assert normalize_file_uri("untitled:Scratch.ws") == "untitled:Scratch.ws"
+
+
+def test_workspace_config_reports_missing_configured_paths(tmp_path: Path) -> None:
+    (tmp_path / "witcherscript.toml").write_text(
+        """
+[project]
+name = "BrokenConfig"
+
+[redkit]
+game_directory = "missing-game"
+
+[scripts]
+source_roots = ["missing-scripts"]
+vanilla_roots = ["missing-vanilla"]
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    config = load_workspace_config(tmp_path)
+    diagnostics = validate_workspace_config(config)
+
+    assert [diagnostic.code for diagnostic in diagnostics] == ["WS4001", "WS4002", "WS4003"]
+
+
+def test_workspace_state_reports_invalid_toml_without_crashing(tmp_path: Path) -> None:
+    (tmp_path / "witcherscript.toml").write_text("[project\n", encoding="utf-8")
+    workspace = WorkspaceState()
+
+    workspace.initialize(tmp_path.as_uri())
+
+    diagnostics = workspace.config_diagnostics[(tmp_path / "witcherscript.toml").as_uri()]
+    assert workspace.config is None
+    assert workspace.index.files == {}
+    assert [diagnostic.code for diagnostic in diagnostics] == ["WS4000"]
 
 
 def _write_workspace(root: Path) -> dict[str, Path]:
