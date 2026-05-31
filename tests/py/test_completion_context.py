@@ -40,7 +40,7 @@ def test_completion_includes_locals_and_members_inside_function(tmp_path: Path) 
     index = ProjectIndex.build(load_workspace_config(tmp_path))
     uri = (tmp_path / "scripts" / "player.ws").resolve().as_uri()
 
-    labels = _labels(index, uri, source, "        return ", occurrence=2)
+    labels = _labels(index, uri, source, "        return ", occurrence=3)
 
     assert {"value", "local", "ownField", "shared", "inherited", "Base", "Player"} <= labels
     assert "return" in labels
@@ -60,6 +60,18 @@ def test_completion_returns_members_after_dot(tmp_path: Path) -> None:
     assert {"ownField", "shared", "inherited", "run"} <= this_labels
     assert "return" not in this_labels
     assert "Base" not in this_labels
+
+
+def test_completion_resolves_chained_member_receiver_type(tmp_path: Path) -> None:
+    source = _write_completion_workspace(tmp_path)
+    index = ProjectIndex.build(load_workspace_config(tmp_path))
+    uri = (tmp_path / "scripts" / "player.ws").resolve().as_uri()
+
+    labels = _labels(index, uri, source, "        local.owner().")
+
+    assert {"ownField", "shared", "inherited", "owner", "run"} <= labels
+    assert "QuestState" not in labels
+    assert "return" not in labels
 
 
 def test_completion_returns_import_targets(tmp_path: Path) -> None:
@@ -99,6 +111,11 @@ class Base
     {
         return 0;
     }
+
+    function owner() : Player
+    {
+        return this;
+    }
 }
 
 state QuestState
@@ -114,6 +131,7 @@ class Player extends Base
     {
         var local : Base;
         local.;
+        local.owner().;
         this.;
         return local;
     }

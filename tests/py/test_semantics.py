@@ -62,6 +62,46 @@ class Player
     ]
 
 
+def test_semantic_diagnostics_report_unknown_members(tmp_path: Path) -> None:
+    script = _write_workspace(
+        tmp_path,
+        """
+class Base
+{
+    var shared : int;
+
+    function owner() : Player
+    {
+        return this;
+    }
+}
+
+class Player extends Base
+{
+    var ownField : string;
+
+    function run()
+    {
+        var local : Base;
+        local.shared;
+        local.missingBaseMember;
+        local.owner().ownField;
+        local.owner().missingPlayerMember;
+    }
+}
+""".lstrip(),
+    )
+
+    index = ProjectIndex.build(load_workspace_config(tmp_path))
+
+    diagnostics = index.diagnostics_for_uri(script.as_uri())
+
+    assert [(diagnostic.code, diagnostic.message) for diagnostic in diagnostics] == [
+        ("WS3006", "Type 'Base' has no member 'missingBaseMember'."),
+        ("WS3006", "Type 'Player' has no member 'missingPlayerMember'."),
+    ]
+
+
 def test_semantic_diagnostics_accept_known_project_types_and_builtins(tmp_path: Path) -> None:
     script = _write_workspace(
         tmp_path,

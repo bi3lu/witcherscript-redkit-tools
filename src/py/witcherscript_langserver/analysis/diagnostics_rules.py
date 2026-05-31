@@ -6,8 +6,22 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from witcherscript_langserver.analysis.symbol_table import Symbol, SymbolKind, SymbolTable
+from witcherscript_langserver.analysis.types import TypeLookupContext, TypeLookupService
 from witcherscript_langserver.indexing.file_index import FileIndex
-from witcherscript_langserver.parser.ast import ClassDecl, Decl, FunctionDecl, StateDecl
+from witcherscript_langserver.parser.ast import (
+    ArrayAccessExpr,
+    AssignmentExpr,
+    BinaryExpr,
+    CallExpr,
+    ClassDecl,
+    Decl,
+    Expr,
+    FunctionDecl,
+    GroupingExpr,
+    MemberAccessExpr,
+    StateDecl,
+    UnaryExpr,
+)
 from witcherscript_langserver.parser.errors import SyntaxDiagnostic
 from witcherscript_langserver.parser.lexer import tokenize
 from witcherscript_langserver.parser.tokens import SourceRange, Token, TokenKind
@@ -172,6 +186,7 @@ def _expression_diagnostics(
                 declaration,
                 symbol_table,
                 tokens,
+                file_uri=file_index.uri,
                 container_name=None,
             )
         )
@@ -183,6 +198,7 @@ def _declaration_expression_diagnostics(
     declaration: Decl,
     symbol_table: SymbolTable,
     tokens: list[Token],
+    file_uri: str,
     container_name: str | None,
 ) -> list[SyntaxDiagnostic]:
     if isinstance(declaration, ClassDecl | StateDecl):
@@ -193,6 +209,7 @@ def _declaration_expression_diagnostics(
                     member,
                     symbol_table,
                     tokens,
+                    file_uri=file_uri,
                     container_name=declaration.name,
                 )
             )
@@ -204,6 +221,7 @@ def _declaration_expression_diagnostics(
             declaration,
             symbol_table,
             tokens,
+            file_uri,
             container_name,
         )
 
@@ -214,11 +232,14 @@ def _function_expression_diagnostics(
     declaration: FunctionDecl,
     symbol_table: SymbolTable,
     tokens: list[Token],
+    file_uri: str,
     container_name: str | None,
 ) -> list[SyntaxDiagnostic]:
     known_names = _known_names(symbol_table, declaration, container_name)
+    type_lookup = TypeLookupService(symbol_table)
     diagnostics: list[SyntaxDiagnostic] = []
     expression_ranges: list[SourceRange] = []
+    expressions: list[Expr] = []
 
     for statement in declaration.statements:
         if statement.kind in {"expression", "for", "if", "return", "switch", "while"}:
@@ -227,10 +248,14 @@ def _function_expression_diagnostics(
                 if statement.expression_range is not None
                 else statement.range
             )
+            if statement.expression is not None:
+                expressions.append(statement.expression)
 
     for local in declaration.locals:
         if local.initializer_range is not None:
             expression_ranges.append(local.initializer_range)
+        if local.initializer is not None:
+            expressions.append(local.initializer)
 
     for expression_range in expression_ranges:
         if expression_range is None:
@@ -241,6 +266,20 @@ def _function_expression_diagnostics(
             _unknown_identifier_diagnostics(expression_tokens, known_names, symbol_table)
         )
         diagnostics.extend(_call_diagnostics(expression_tokens, symbol_table))
+
+    for expression in expressions:
+        diagnostics.extend(
+            _unknown_member_diagnostics(
+                expression,
+                type_lookup,
+                TypeLookupContext(
+                    file_uri=file_uri,
+                    offset=expression.range.start.offset,
+                    function_name=declaration.name,
+                    container_name=container_name,
+                ),
+            )
+        )
 
     return diagnostics
 
@@ -315,6 +354,63 @@ def _call_diagnostics(tokens: list[Token], symbol_table: SymbolTable) -> list[Sy
                     range=token.range,
                 )
             )
+
+    return diagnostics
+
+
+def _unknown_member_diagnostics(
+    expression: Expr,
+    type_lookup: TypeLookupService,
+    context: TypeLookupContext,
+) -> list[SyntaxDiagnostic]:
+    diagnostics: list[SyntaxDiagnostic] = []
+
+    if isinstance(expression, MemberAccessExpr):
+        target_type = type_lookup.type_of_expression(expression.target, context)
+
+        if (
+            target_type is not None
+            and type_lookup.is_known_project_type(target_type)
+            and type_lookup.member_for_type(target_type, expression.member) is None
+        ):
+            diagnostics.append(
+                SyntaxDiagnostic(
+                    code="WS3006",
+                    message=f"Type '{target_type}' has no member '{expression.member}'.",
+                    range=expression.member_range,
+                )
+            )
+
+        diagnostics.extend(_unknown_member_diagnostics(expression.target, type_lookup, context))
+        return diagnostics
+
+    if isinstance(expression, CallExpr):
+        diagnostics.extend(_unknown_member_diagnostics(expression.callee, type_lookup, context))
+        for arg in expression.args:
+            diagnostics.extend(_unknown_member_diagnostics(arg, type_lookup, context))
+
+        return diagnostics
+
+    if isinstance(expression, ArrayAccessExpr):
+        diagnostics.extend(_unknown_member_diagnostics(expression.target, type_lookup, context))
+        diagnostics.extend(_unknown_member_diagnostics(expression.index, type_lookup, context))
+        return diagnostics
+
+    if isinstance(expression, AssignmentExpr):
+        diagnostics.extend(_unknown_member_diagnostics(expression.target, type_lookup, context))
+        diagnostics.extend(_unknown_member_diagnostics(expression.value, type_lookup, context))
+        return diagnostics
+
+    if isinstance(expression, BinaryExpr):
+        diagnostics.extend(_unknown_member_diagnostics(expression.left, type_lookup, context))
+        diagnostics.extend(_unknown_member_diagnostics(expression.right, type_lookup, context))
+        return diagnostics
+
+    if isinstance(expression, GroupingExpr):
+        return _unknown_member_diagnostics(expression.expression, type_lookup, context)
+
+    if isinstance(expression, UnaryExpr):
+        return _unknown_member_diagnostics(expression.operand, type_lookup, context)
 
     return diagnostics
 
