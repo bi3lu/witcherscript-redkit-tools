@@ -257,7 +257,10 @@ def _receiver_start(text: str) -> int:
             continue
 
         if char in "([":
-            depth = max(depth - 1, 0)
+            if depth == 0:
+                return index + 1
+
+            depth -= 1
             continue
 
         if depth == 0 and char in " \t=,;{":
