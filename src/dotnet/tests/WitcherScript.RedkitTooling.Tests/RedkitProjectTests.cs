@@ -110,6 +110,51 @@ public sealed class RedkitProjectTests
     }
 
     [Fact]
+    public void ConfigWriterBacksUpExistingConfigurationWhenForced()
+    {
+        using var workspace = TemporaryWorkspace.Create();
+        var configPath = workspace.PathFor("Project", "witcherscript.toml");
+        var project = new RedkitProject(
+            "Sample",
+            workspace.CreateDirectory("Project"),
+            null,
+            null,
+            [],
+            []
+        );
+        workspace.CreateFileWithContent("Project", "witcherscript.toml", "old = true");
+
+        var result = new WitcherScriptConfigWriter().WriteToFile(project, configPath, overwrite: true);
+
+        Assert.True(result.OverwroteExistingFile);
+        Assert.Equal($"{configPath}.bak", result.BackupPath);
+        Assert.Equal("old = true", File.ReadAllText(result.BackupPath!));
+        Assert.Contains("name = \"Sample\"", File.ReadAllText(configPath), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ConfigWriterRefusesOverwriteWithoutForce()
+    {
+        using var workspace = TemporaryWorkspace.Create();
+        var configPath = workspace.PathFor("Project", "witcherscript.toml");
+        var project = new RedkitProject(
+            "Sample",
+            workspace.CreateDirectory("Project"),
+            null,
+            null,
+            [],
+            []
+        );
+        workspace.CreateFileWithContent("Project", "witcherscript.toml", "old = true");
+
+        var exception = Assert.Throws<IOException>(() =>
+            new WitcherScriptConfigWriter().WriteToFile(project, configPath, overwrite: false)
+        );
+
+        Assert.Contains("--force", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ValidatorReportsMissingScriptRoots()
     {
         using var workspace = TemporaryWorkspace.Create();
@@ -143,6 +188,74 @@ public sealed class RedkitProjectTests
         Assert.Equal("/tools/recompile", runner.FileName);
         Assert.Equal(["recompile", "--project", "/project"], runner.Arguments);
         Assert.Equal("/project", runner.WorkingDirectory);
+    }
+
+    [Fact]
+    public void GameDetectorUsesInjectedWindowsStyleCandidates()
+    {
+        using var workspace = TemporaryWorkspace.Create();
+        var gameDirectory = workspace.CreateDirectory(
+            "SteamLibrary",
+            "steamapps",
+            "common",
+            "The Witcher 3"
+        );
+        workspace.CreateFile(
+            "SteamLibrary",
+            "steamapps",
+            "common",
+            "The Witcher 3",
+            "bin",
+            "x64_dx12",
+            "witcher3.exe"
+        );
+
+        var detected = new GameInstallationDetector([gameDirectory]).Detect();
+
+        Assert.Equal(gameDirectory, detected);
+    }
+
+    [Fact]
+    public void RedkitDetectorUsesInjectedWindowsStyleCandidates()
+    {
+        using var workspace = TemporaryWorkspace.Create();
+        var redkitDirectory = workspace.CreateDirectory(
+            "SteamLibrary",
+            "steamapps",
+            "common",
+            "The Witcher 3 REDkit"
+        );
+        workspace.CreateFile(
+            "SteamLibrary",
+            "steamapps",
+            "common",
+            "The Witcher 3 REDkit",
+            "REDkit.exe"
+        );
+
+        var detected = new RedkitInstallationDetector([redkitDirectory]).Detect();
+
+        Assert.Equal(redkitDirectory, detected);
+    }
+
+    [Fact]
+    public void RecompileLogParserExtractsCompilerMessages()
+    {
+        var output = string.Join(
+            Environment.NewLine,
+            [
+                @"D:\Project\content\scripts\player.ws(12,4): error WS2001: Expected ';'",
+                @"D:\Project\content\scripts\quest.ws(20): warning WS3001: Unknown type",
+            ]
+        );
+
+        var summary = new RecompileLogParser().Parse(new ProcessRunResult(1, output, string.Empty));
+
+        Assert.True(summary.HasErrors);
+        Assert.Equal(1, summary.ErrorCount);
+        Assert.Equal(1, summary.WarningCount);
+        Assert.Contains(summary.Entries, entry => entry.File?.EndsWith("player.ws", StringComparison.Ordinal) == true);
+        Assert.Contains(summary.Entries, entry => entry.Code == "WS3001" && entry.Line == 20);
     }
 
     [Fact]
@@ -217,6 +330,15 @@ public sealed class RedkitProjectTests
             var path = PathFor(parts);
             Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
             File.WriteAllText(path, string.Empty);
+        }
+
+        public void CreateFileWithContent(params string[] partsAndContent)
+        {
+            var content = partsAndContent[^1];
+            var parts = partsAndContent[..^1];
+            var path = PathFor(parts);
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, content);
         }
 
         public void Dispose()

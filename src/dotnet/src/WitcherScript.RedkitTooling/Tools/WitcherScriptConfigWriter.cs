@@ -41,14 +41,31 @@ public sealed class WitcherScriptConfigWriter
     /// <param name="project">Project model to serialize.</param>
     /// <param name="path">Destination file path.</param>
     /// <param name="overwrite">Whether an existing file may be replaced.</param>
-    public void WriteToFile(RedkitProject project, string path, bool overwrite)
+    public ConfigWriteResult WriteToFile(RedkitProject project, string path, bool overwrite)
     {
+        var existed = File.Exists(path);
         if (File.Exists(path) && !overwrite)
         {
-            throw new IOException($"Configuration file already exists: {path}");
+            throw new IOException($"Configuration file already exists: {path}. Use --force to overwrite it.");
         }
 
-        File.WriteAllText(path, Write(project), Encoding.UTF8);
+        var backupPath = existed ? $"{path}.bak" : null;
+        if (backupPath is not null)
+        {
+            File.Copy(path, backupPath, overwrite: true);
+        }
+
+        var directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var temporaryPath = $"{path}.tmp";
+        File.WriteAllText(temporaryPath, Write(project), Encoding.UTF8);
+        File.Move(temporaryPath, path, overwrite: true);
+
+        return new ConfigWriteResult(path, existed, backupPath);
     }
 
     private static string[] ProjectScriptRoots(RedkitProject project)
@@ -110,3 +127,15 @@ public sealed class WitcherScriptConfigWriter
         return $"\"{value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal)}\"";
     }
 }
+
+/// <summary>
+/// Describes the result of writing a language-server configuration file.
+/// </summary>
+/// <param name="Path">Destination configuration path.</param>
+/// <param name="OverwroteExistingFile">Whether an existing file was replaced.</param>
+/// <param name="BackupPath">Backup path created before replacing an existing file.</param>
+public sealed record ConfigWriteResult(
+    string Path,
+    bool OverwroteExistingFile,
+    string? BackupPath
+);

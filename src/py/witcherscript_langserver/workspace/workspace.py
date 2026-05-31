@@ -2,14 +2,22 @@
 
 from __future__ import annotations
 
+import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from witcherscript_langserver.indexing.file_index import FileIndex
 from witcherscript_langserver.indexing.project_index import ProjectIndex
+from witcherscript_langserver.parser.errors import SyntaxDiagnostic
 
-from .config import WorkspaceConfig, load_workspace_config
+from .config import (
+    CONFIG_FILE_NAME,
+    WorkspaceConfig,
+    invalid_toml_diagnostic,
+    load_workspace_config,
+    validate_workspace_config,
+)
 
 
 @dataclass
@@ -20,12 +28,14 @@ class WorkspaceState:
         root_uri: LSP root URI received from the client.
         root_path: Local workspace root path.
         config: Loaded workspace configuration.
+        config_diagnostics: Diagnostics associated with ``witcherscript.toml``.
         index: Project-wide file index.
     """
 
     root_uri: str | None = None
     root_path: Path | None = None
     config: WorkspaceConfig | None = None
+    config_diagnostics: dict[str, list[SyntaxDiagnostic]] = field(default_factory=dict)
     index: ProjectIndex = field(default_factory=ProjectIndex)
 
     def initialize(self, root_uri: str | None) -> None:
@@ -51,10 +61,20 @@ class WorkspaceState:
         """
         if self.root_path is None:
             self.config = None
+            self.config_diagnostics = {}
             self.index = ProjectIndex()
             return
 
-        self.config = load_workspace_config(self.root_path)
+        config_path = (self.root_path / CONFIG_FILE_NAME).resolve()
+
+        try:
+            self.config = load_workspace_config(self.root_path)
+            diagnostics = validate_workspace_config(self.config)
+        except tomllib.TOMLDecodeError as error:
+            self.config = None
+            diagnostics = (invalid_toml_diagnostic(error),)
+
+        self.config_diagnostics = {config_path.as_uri(): list(diagnostics)}
         self.reindex()
 
     def reindex(self) -> None:

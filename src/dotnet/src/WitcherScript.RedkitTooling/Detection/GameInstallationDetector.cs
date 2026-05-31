@@ -69,15 +69,48 @@ public sealed class GameInstallationDetector
 
         if (OperatingSystem.IsWindows())
         {
-            candidates.AddRange(
-                [
-                    @"C:\Program Files (x86)\Steam\steamapps\common\The Witcher 3",
-                    @"C:\Program Files\GOG Galaxy\Games\The Witcher 3 Wild Hunt",
-                    @"C:\GOG Games\The Witcher 3 Wild Hunt",
-                ]
-            );
+            AddWindowsStorefrontCandidates(candidates, "The Witcher 3");
+            AddWindowsStorefrontCandidates(candidates, "The Witcher 3 Wild Hunt");
         }
 
         return [.. candidates];
+    }
+
+    private static void AddWindowsStorefrontCandidates(List<string> candidates, string gameFolderName)
+    {
+        foreach (var programFilesPath in ProgramFilesPaths())
+        {
+            candidates.Add(Path.Combine(programFilesPath, "Steam", "steamapps", "common", gameFolderName));
+            candidates.Add(Path.Combine(programFilesPath, "GOG Galaxy", "Games", gameFolderName));
+            candidates.Add(Path.Combine(programFilesPath, "Epic Games", gameFolderName));
+        }
+
+        foreach (var drive in FixedWindowsDriveRoots())
+        {
+            candidates.Add(Path.Combine(drive, "SteamLibrary", "steamapps", "common", gameFolderName));
+            candidates.Add(Path.Combine(drive, "Steam", "steamapps", "common", gameFolderName));
+            candidates.Add(Path.Combine(drive, "GOG Games", gameFolderName));
+            candidates.Add(Path.Combine(drive, "Games", gameFolderName));
+        }
+    }
+
+    private static IEnumerable<string> ProgramFilesPaths()
+    {
+        foreach (var variable in new[] { "ProgramFiles(x86)", "ProgramFiles", "ProgramW6432" })
+        {
+            var path = Environment.GetEnvironmentVariable(variable);
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                yield return path;
+            }
+        }
+    }
+
+    private static IEnumerable<string> FixedWindowsDriveRoots()
+    {
+        foreach (var drive in new[] { "C", "D", "E", "F", "G" })
+        {
+            yield return $"{drive}:\\";
+        }
     }
 }

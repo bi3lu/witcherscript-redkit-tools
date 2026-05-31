@@ -11,6 +11,8 @@ The VS Code extension under `src/vscode` is a lightweight client for exercising 
 - Exposes `WitcherScript: Show Output Logs`.
 - Exposes `WitcherScript: Refresh Project Index`.
 - Exposes `WitcherScript: Initialize REDkit Config`.
+- Exposes `WitcherScript: Recompile Scripts`.
+- Exposes `WitcherScript: Launch Game`.
 - Exposes `WitcherScript: Restart Language Server`.
 - Provides Extension Host debug configuration.
 
@@ -80,3 +82,21 @@ Override the command when using a packaged CLI:
 ```
 
 The command refreshes the LSP project index after `witcherscript.toml` is generated.
+If `witcherscript.toml` already exists, the extension asks before calling `init --force`.
+
+Script recompilation requires an executable configured for the REDkit workflow:
+
+```json
+{
+  "witcherscript.redkit.recompile.executable": "D:/Tools/recompile.exe"
+}
+```
+
+Game launch can either use the executable resolved by the C# CLI from `witcherscript.toml` or an explicit override:
+
+```json
+{
+  "witcherscript.redkit.launch.executable": "D:/Steam/steamapps/common/The Witcher 3/bin/x64_dx12/witcher3.exe",
+  "witcherscript.redkit.launch.args": ["-debugscripts"]
+}
+```

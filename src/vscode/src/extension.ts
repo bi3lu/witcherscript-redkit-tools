@@ -7,6 +7,8 @@ import type { LanguageClientOptions, ServerOptions } from "vscode-languageclient
 const CONFIG_SECTION = "witcherscript";
 const REFRESH_INDEX_COMMAND = "witcherscript.refreshIndex";
 const REDKIT_INIT_COMMAND = "witcherscript.redkitInit";
+const REDKIT_RECOMPILE_COMMAND = "witcherscript.redkitRecompile";
+const REDKIT_LAUNCH_GAME_COMMAND = "witcherscript.redkitLaunchGame";
 const RESTART_SERVER_COMMAND = "witcherscript.restartLanguageServer";
 const SHOW_OUTPUT_COMMAND = "witcherscript.showOutput";
 
@@ -32,6 +34,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }),
     vscode.commands.registerCommand(REDKIT_INIT_COMMAND, async () => {
       await initializeRedkitConfig(context);
+    }),
+    vscode.commands.registerCommand(REDKIT_RECOMPILE_COMMAND, async () => {
+      await recompileRedkitScripts(context);
+    }),
+    vscode.commands.registerCommand(REDKIT_LAUNCH_GAME_COMMAND, async () => {
+      await launchGame(context);
     }),
     vscode.commands.registerCommand(RESTART_SERVER_COMMAND, async () => {
       await restartLanguageServer(context);
@@ -179,6 +187,27 @@ async function initializeRedkitConfig(context: vscode.ExtensionContext): Promise
   }
 
   const { command, args } = redkitCommand(context, workspaceFolder);
+  const configPath = vscode.Uri.file(path.join(workspaceFolder.uri.fsPath, "witcherscript.toml"));
+  const commandArgs = [
+    ...args,
+    "init",
+    "--project-dir",
+    workspaceFolder.uri.fsPath,
+  ];
+
+  if (await fileExists(configPath)) {
+    const action = await vscode.window.showWarningMessage(
+      "witcherscript.toml already exists in this workspace.",
+      { modal: true },
+      "Overwrite",
+    );
+
+    if (action !== "Overwrite") {
+      return;
+    }
+
+    commandArgs.push("--force");
+  }
 
   await vscode.window.withProgress(
     {
@@ -186,23 +215,131 @@ async function initializeRedkitConfig(context: vscode.ExtensionContext): Promise
       title: "Initializing WitcherScript REDkit configuration",
     },
     async () => {
-      await executeRedkitCommand(command, [
-        ...args,
-        "init",
-        "--project-dir",
-        workspaceFolder.uri.fsPath,
-      ]);
+      await executeRedkitCommand(
+        command,
+        commandArgs,
+        "REDkit config initialization",
+        "WitcherScript REDkit config initialized.",
+      );
     },
   );
 
   await refreshIndex();
 }
 
-function executeRedkitCommand(command: string, args: string[]): Promise<void> {
+async function fileExists(uri: vscode.Uri): Promise<boolean> {
+  try {
+    await vscode.workspace.fs.stat(uri);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function recompileRedkitScripts(context: vscode.ExtensionContext): Promise<void> {
+  const workspaceFolder = currentWorkspaceFolder();
+
+  if (workspaceFolder === undefined) {
+    vscode.window.showWarningMessage("Open a workspace folder before recompiling scripts.");
+    return;
+  }
+
+  const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+  const executable = expandPath(
+    config.get<string>("redkit.recompile.executable", ""),
+    context,
+    workspaceFolder,
+  ).trim();
+
+  if (executable.length === 0) {
+    const action = await vscode.window.showErrorMessage(
+      "Configure witcherscript.redkit.recompile.executable before running script recompilation.",
+      "Open Settings",
+    );
+
+    if (action === "Open Settings") {
+      await vscode.commands.executeCommand(
+        "workbench.action.openSettings",
+        "witcherscript.redkit.recompile.executable",
+      );
+    }
+
+    return;
+  }
+
+  const { command, args } = redkitCommand(context, workspaceFolder);
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: "Recompiling WitcherScript scripts",
+    },
+    async () => {
+      await executeRedkitCommand(command, [
+        ...args,
+        "recompile",
+        "--project-dir",
+        workspaceFolder.uri.fsPath,
+        "--executable",
+        executable,
+      ], "REDkit script recompilation", "WitcherScript scripts recompiled.");
+    },
+  );
+}
+
+async function launchGame(context: vscode.ExtensionContext): Promise<void> {
+  const workspaceFolder = currentWorkspaceFolder();
+
+  if (workspaceFolder === undefined) {
+    vscode.window.showWarningMessage("Open a workspace folder before launching the game.");
+    return;
+  }
+
+  const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+  const executable = expandPath(
+    config.get<string>("redkit.launch.executable", ""),
+    context,
+    workspaceFolder,
+  ).trim();
+  const launchArgs = config
+    .get<string[]>("redkit.launch.args", [])
+    .map((argument) => expandPath(argument, context, workspaceFolder));
+  const { command, args } = redkitCommand(context, workspaceFolder);
+  const commandArgs = [
+    ...args,
+    "launch-game",
+    "--project-dir",
+    workspaceFolder.uri.fsPath,
+  ];
+
+  if (executable.length > 0) {
+    commandArgs.push("--executable", executable);
+  }
+
+  if (launchArgs.length > 0) {
+    commandArgs.push("--", ...launchArgs);
+  }
+
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: "Launching The Witcher 3",
+    },
+    async () => {
+      await executeRedkitCommand(command, commandArgs, "REDkit game launch", "The Witcher 3 launched.");
+    },
+  );
+}
+
+function executeRedkitCommand(
+  command: string,
+  args: string[],
+  label: string,
+  successMessage: string,
+): Promise<void> {
   outputChannel?.appendLine(`Running REDkit tooling: ${command} ${args.join(" ")}`);
 
   return new Promise((resolve, reject) => {
-    cp.execFile(command, args, { windowsHide: true }, (error, stdout, stderr) => {
+    cp.execFile(command, args, { maxBuffer: 1024 * 1024 * 8, windowsHide: true }, (error, stdout, stderr) => {
       if (stdout.length > 0) {
         outputChannel?.append(stdout);
       }
@@ -213,12 +350,12 @@ function executeRedkitCommand(command: string, args: string[]): Promise<void> {
 
       if (error !== null) {
         outputChannel?.show(true);
-        vscode.window.showErrorMessage(`REDkit config initialization failed: ${error.message}`);
+        vscode.window.showErrorMessage(`${label} failed: ${error.message}`);
         reject(new Error(error.message, { cause: error }));
         return;
       }
 
-      vscode.window.showInformationMessage("WitcherScript REDkit config initialized.");
+      vscode.window.showInformationMessage(successMessage);
       resolve();
     });
   });

@@ -69,14 +69,51 @@ public sealed class RedkitInstallationDetector
 
         if (OperatingSystem.IsWindows())
         {
-            candidates.AddRange(
-                [
-                    @"C:\Program Files (x86)\Steam\steamapps\common\The Witcher 3 REDkit",
-                    @"C:\Program Files\GOG Galaxy\Games\The Witcher 3 REDkit",
-                ]
-            );
+            foreach (var programFilesPath in ProgramFilesPaths())
+            {
+                candidates.Add(
+                    Path.Combine(
+                        programFilesPath,
+                        "Steam",
+                        "steamapps",
+                        "common",
+                        "The Witcher 3 REDkit"
+                    )
+                );
+                candidates.Add(Path.Combine(programFilesPath, "GOG Galaxy", "Games", "The Witcher 3 REDkit"));
+            }
+
+            foreach (var drive in FixedWindowsDriveRoots())
+            {
+                candidates.Add(
+                    Path.Combine(drive, "SteamLibrary", "steamapps", "common", "The Witcher 3 REDkit")
+                );
+                candidates.Add(Path.Combine(drive, "Steam", "steamapps", "common", "The Witcher 3 REDkit"));
+                candidates.Add(Path.Combine(drive, "GOG Games", "The Witcher 3 REDkit"));
+                candidates.Add(Path.Combine(drive, "Games", "The Witcher 3 REDkit"));
+            }
         }
 
         return [.. candidates];
+    }
+
+    private static IEnumerable<string> ProgramFilesPaths()
+    {
+        foreach (var variable in new[] { "ProgramFiles(x86)", "ProgramFiles", "ProgramW6432" })
+        {
+            var path = Environment.GetEnvironmentVariable(variable);
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                yield return path;
+            }
+        }
+    }
+
+    private static IEnumerable<string> FixedWindowsDriveRoots()
+    {
+        foreach (var drive in new[] { "C", "D", "E", "F", "G" })
+        {
+            yield return $"{drive}:\\";
+        }
     }
 }
