@@ -7,7 +7,7 @@ from pygls.lsp.server import LanguageServer
 
 from witcherscript_langserver import __version__
 from witcherscript_langserver.indexing.file_index import FileIndex
-from witcherscript_langserver.workspace import WorkspaceState, normalize_file_uri
+from witcherscript_langserver.workspace import WorkspaceState, normalize_file_uri, path_from_uri
 
 from .completion import completions
 from .definition import definition
@@ -106,6 +106,7 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
         """
         _ = params
         ls.initialized = True
+        publish_config_diagnostics(ls)
 
     @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
     def did_open(ls: WitcherScriptLanguageServer, params: types.DidOpenTextDocumentParams) -> None:
@@ -163,6 +164,11 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
             params: Watched file change notification parameters.
         """
         for change in params.changes:
+            path = path_from_uri(change.uri)
+            if path is not None and path.name == "witcherscript.toml":
+                refresh_workspace_index(ls)
+                continue
+
             if change.type == types.FileChangeType.Deleted:
                 ls.workspace_state.remove_file(change.uri)
 
@@ -377,6 +383,7 @@ def refresh_workspace_index(ls: WitcherScriptLanguageServer) -> dict[str, int]:
         Summary of the refreshed index.
     """
     ls.workspace_state.reload()
+    publish_config_diagnostics(ls)
 
     for uri, text in _unique_cached_documents(ls).items():
         ls.workspace_state.update_file(uri, text)
@@ -386,6 +393,21 @@ def refresh_workspace_index(ls: WitcherScriptLanguageServer) -> dict[str, int]:
         "indexedFiles": len(ls.workspace_state.index.files),
         "indexedSymbols": len(ls.workspace_state.index.symbols),
     }
+
+
+def publish_config_diagnostics(ls: WitcherScriptLanguageServer) -> None:
+    """Publish diagnostics associated with ``witcherscript.toml``.
+
+    Args:
+        ls: Active WitcherScript language server instance.
+    """
+    for uri, diagnostics in ls.workspace_state.config_diagnostics.items():
+        ls.text_document_publish_diagnostics(
+            types.PublishDiagnosticsParams(
+                uri=uri,
+                diagnostics=collect_diagnostics("", diagnostics),
+            )
+        )
 
 
 def _unique_cached_documents(ls: WitcherScriptLanguageServer) -> dict[str, str]:
