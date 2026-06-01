@@ -34,7 +34,7 @@ jobs:
 
       - name: Install extension dependencies
         working-directory: src/vscode
-        run: npm ci
+        run: npm ci --prefer-online
 
       - name: Verify version metadata
         run: uv run python scripts/sync_version.py --check

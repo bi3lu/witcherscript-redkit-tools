@@ -38,6 +38,32 @@ def test_server_registers_minimal_lsp_features() -> None:
     assert types.TEXT_DOCUMENT_REFERENCES in features
 
 
+def test_protocol_initialize_serializes_server_capabilities() -> None:
+    server = create_server()
+    initialize = server.protocol.lsp_initialize(
+        types.InitializeParams(
+            capabilities=types.ClientCapabilities(),
+            process_id=123,
+            root_uri="file:///workspace",
+        )
+    )
+    handler, args, kwargs = next(initialize)
+    handler(*args, **(kwargs or {}))
+
+    try:
+        initialize.send(None)
+    except StopIteration as stop:
+        result = stop.value
+    else:
+        raise AssertionError("LSP initialize did not return capabilities.")
+
+    assert isinstance(result, types.InitializeResult)
+    assert isinstance(
+        result.capabilities.semantic_tokens_provider,
+        types.SemanticTokensRegistrationOptions,
+    )
+
+
 def test_initialize_and_initialized_update_server_state() -> None:
     server = create_server()
     root_uri = "file:///workspace"
