@@ -3,7 +3,7 @@
   "displayName": "WitcherScript REDkit Tools",
   "description": "VS Code client for the WitcherScript language server and REDkit project tooling.",
   "version": "0.4.1",
-  "publisher": "witcherscript",
+  "publisher": "bi3lu",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
   ],
   "activationEvents": [
     "onLanguage:witcherscript",
+    "onCommand:witcherscript.doctorSetup",
     "onCommand:witcherscript.refreshIndex",
     "onCommand:witcherscript.redkitInit",
     "onCommand:witcherscript.redkitRecompile",
@@ -94,6 +95,10 @@
       }
     },
     "commands": [
+      {
+        "command": "witcherscript.doctorSetup",
+        "title": "WitcherScript: Doctor Setup"
+      },
       {
         "command": "witcherscript.refreshIndex",
         "title": "WitcherScript: Refresh Project Index"

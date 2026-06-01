@@ -8,6 +8,7 @@ VS Code harness for testing the WitcherScript language server and REDkit project
 - Starts the Python language server through a configurable local command.
 - Enables semantic highlighting for WitcherScript symbols.
 - Shows WitcherScript LSP status in the status bar.
+- Registers `WitcherScript: Doctor Setup`.
 - Registers `WitcherScript: Show Output Logs`.
 - Registers `WitcherScript: Refresh Project Index`.
 - Registers `WitcherScript: Initialize REDkit Config`.
