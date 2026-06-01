@@ -1,10 +1,14 @@
 {
   "name": "witcherscript-redkit-tools",
   "displayName": "WitcherScript REDkit Tools",
-  "description": "VS Code harness for the WitcherScript language server and REDkit project tooling.",
+  "description": "VS Code client for the WitcherScript language server and REDkit project tooling.",
   "version": "0.3.0",
   "publisher": "witcherscript",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bi3lu/witcherscript-redkit-tools.git"
+  },
   "engines": {
     "vscode": "^1.92.0"
   },
@@ -26,7 +30,8 @@
     "watch": "tsc -watch -p ./",
     "check": "tsc --noEmit -p ./",
     "lint": "eslint src",
-    "smoke": "npm run lint && npm run check && npm run compile"
+    "smoke": "npm run lint && npm run check && npm run compile",
+    "package:vsix": "vsce package"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"
@@ -35,6 +40,7 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.10.1",
     "@types/vscode": "^1.92.0",
+    "@vscode/vsce": "^3.9.1",
     "eslint": "^10.4.1",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.60.0"
@@ -110,8 +116,8 @@
         },
         "witcherscript.languageServer.cwd": {
           "type": "string",
-          "default": "${extensionPath}/../..",
-          "description": "Working directory used when starting the language server."
+          "default": "",
+          "description": "Working directory used when starting the language server. Leave empty to use the bundled server in packaged builds or the repository root during extension development."
         },
         "witcherscript.redkit.command": {
           "type": "string",

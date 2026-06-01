@@ -23,9 +23,12 @@ in C#, and editor integration talks to the language server through standard LSP.
 1. Download the latest `.vsix` from
    [GitHub Releases](https://github.com/bi3lu/witcherscript-redkit-tools/releases).
 2. Install it in VS Code with `Extensions: Install from VSIX...`.
-3. Set your Witcher 3 and REDkit paths in the extension settings.
+3. Make sure `uv` and the .NET SDK are available on `PATH`; the packaged
+   extension includes the language server and REDkit CLI sources and runs them
+   locally.
 4. Open your mod workspace.
 5. Run `WitcherScript: Initialize REDkit Config`.
+6. Set Witcher 3 / REDkit paths if the generated config does not detect them.
 
 The extension uses `witcherscript.toml` as the project configuration file. The
 initialize command creates that file for the current workspace, and the language
@@ -244,6 +247,15 @@ uv run pytest --cov=src/py
 dotnet test src/dotnet/WitcherScript.RedkitTooling.sln
 npm --prefix src/vscode run smoke
 ```
+
+Package the installable VS Code extension locally:
+
+```bash
+uv run python scripts/prepare_vscode_package.py
+npm --prefix src/vscode run package:vsix -- --out ../../dist/witcherscript-redkit-tools.vsix
+```
+
+Published GitHub Releases automatically attach a `.vsix` asset.
 
 Common shortcuts are available through `make`:
 

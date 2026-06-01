@@ -38,11 +38,16 @@ The extension starts the server with these defaults:
   "witcherscript.languageServer.path": "",
   "witcherscript.languageServer.command": "uv",
   "witcherscript.languageServer.args": ["run", "witcherscript-lsp"],
-  "witcherscript.languageServer.cwd": "${extensionPath}/../.."
+  "witcherscript.languageServer.cwd": ""
 }
 ```
 
-Use absolute paths, `${extensionPath}`, or `${workspaceFolder}` when testing against projects outside this repository.
+When `witcherscript.languageServer.cwd` is empty, the extension uses the bundled
+language server in packaged `.vsix` builds. During local extension development it
+falls back to the repository root.
+
+Use absolute paths, `${extensionPath}`, or `${workspaceFolder}` when testing
+against projects outside this repository.
 
 Set `witcherscript.languageServer.path` to a concrete executable when you do not want to rely on `uv` from `PATH`. For example:
 
@@ -72,6 +77,9 @@ By default, `WitcherScript: Initialize REDkit Config` runs the repository-local 
 dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- init --project-dir <workspace>
 ```
 
+In packaged `.vsix` builds, the extension runs the bundled REDkit CLI source
+through `dotnet run`.
+
 Override the command when using a packaged CLI:
 
 ```json
@@ -99,4 +107,23 @@ Game launch can either use the executable resolved by the C# CLI from `witchersc
   "witcherscript.redkit.launch.executable": "D:/Steam/steamapps/common/The Witcher 3/bin/x64_dx12/witcher3.exe",
   "witcherscript.redkit.launch.args": ["-debugscripts"]
 }
+```
+
+## Release Packaging
+
+The release workflow builds a `.vsix` and uploads it to GitHub Releases. The
+package includes:
+
+- compiled VS Code extension JavaScript
+- Python language server source under `server/`
+- REDkit C# CLI source under `redkit/`
+
+Packaged installs still require `uv` for the Python language server and the .NET
+SDK for REDkit CLI commands.
+
+Build the same package locally:
+
+```bash
+uv run python scripts/prepare_vscode_package.py
+npm --prefix src/vscode run package:vsix -- --out ../../dist/witcherscript-redkit-tools.vsix
 ```
