@@ -33,8 +33,12 @@ Supported request:
 Supported command:
 
 - `witcherscript.refreshIndex`
+- `witcherscript.inheritanceTree`
 
 This command reloads `witcherscript.toml`, rebuilds the project index, and keeps open document contents active in the rebuilt index. It is intended for clients that run REDkit tooling commands, such as `ws-redkit init`, while the language server process is already running.
+
+`witcherscript.inheritanceTree` returns a JSON-serializable class inheritance
+tree for a requested class name.
 
 ## Diagnostics
 
@@ -52,6 +56,23 @@ Examples:
 - `WS1003`: unterminated block comment
 - `WS2001`: expected semicolon
 - `WS2002`: expected closing brace
+- `WS3002`: unknown type
+- `WS3004`: unknown identifier
+- `WS4000`: invalid `witcherscript.toml`
+
+## Code Actions
+
+Supported request:
+
+- `textDocument/codeAction`
+
+Quick fixes include:
+
+- creating `witcherscript.toml` through the VS Code REDkit init command
+- opening `witcherscript.toml` for configuration diagnostics
+- inserting a missing semicolon
+- inserting a missing closing brace
+- replacing likely symbol/type typos with the closest indexed symbol
 
 ## Document Symbols
 
@@ -85,6 +106,16 @@ Supported request:
 
 The server resolves the identifier under the cursor against the project symbol table. Local declarations in the current file are preferred over symbols from other files when names overlap.
 
+## Implementations
+
+Supported request:
+
+- `textDocument/implementation`
+
+For classes, implementation lookup returns derived classes. For class functions
+and events, it returns override-like declarations with the same name in derived
+classes.
+
 ## Completion
 
 Supported request:
@@ -114,6 +145,16 @@ Supported request:
 - `textDocument/references`
 
 References are resolved by exact identifier matching across indexed files. The lookup respects word boundaries and can include or exclude the declaration based on the request context.
+
+## Rename
+
+Supported requests:
+
+- `textDocument/prepareRename`
+- `textDocument/rename`
+
+Rename is intentionally conservative. It currently supports local variables and
+function parameters within the current function scope only.
 
 ## Workspace Configuration
 

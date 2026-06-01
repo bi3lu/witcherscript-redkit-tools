@@ -43,6 +43,46 @@ def word_at_position(source: str, position: types.Position) -> str | None:
     return source[start:end]
 
 
+def word_range_at_position(source: str, position: types.Position) -> types.Range | None:
+    """Return the range of the identifier-like word at an LSP position.
+
+    Args:
+        source: Full document source text.
+        position: LSP position.
+
+    Returns:
+        LSP range for the word at the position, or ``None`` when there is no word.
+    """
+    offset = offset_at_position(source, position)
+
+    if offset is None:
+        return None
+
+    if offset == len(source) and offset > 0:
+        offset -= 1
+
+    if offset < len(source) and not _is_identifier_part(source[offset]):
+        if offset == 0 or not _is_identifier_part(source[offset - 1]):
+            return None
+
+        offset -= 1
+
+    start = offset
+
+    while start > 0 and _is_identifier_part(source[start - 1]):
+        start -= 1
+
+    end = offset
+
+    while end < len(source) and _is_identifier_part(source[end]):
+        end += 1
+
+    if start == end:
+        return None
+
+    return types.Range(start=position_at_offset(source, start), end=position_at_offset(source, end))
+
+
 def offset_at_position(source: str, position: types.Position) -> int | None:
     """Convert an LSP position to a source offset.
 

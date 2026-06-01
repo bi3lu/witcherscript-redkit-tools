@@ -9,15 +9,19 @@ from witcherscript_langserver import __version__
 from witcherscript_langserver.indexing.file_index import FileIndex
 from witcherscript_langserver.workspace import WorkspaceState, normalize_file_uri, path_from_uri
 
+from .code_actions import code_actions
 from .completion import completions
 from .definition import definition
 from .diagnostics import collect_diagnostics
 from .hover import hover
+from .implementation import implementations, inheritance_tree
 from .references import references
+from .rename import prepare_rename, rename_symbol
 from .signature_help import signature_help
 from .symbols import document_symbols, workspace_symbols
 
 REFRESH_INDEX_COMMAND = "witcherscript.refreshIndex"
+INHERITANCE_TREE_COMMAND = "witcherscript.inheritanceTree"
 
 
 class WitcherScriptLanguageServer(LanguageServer):
@@ -177,12 +181,12 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
 
     @server.feature(
         types.WORKSPACE_EXECUTE_COMMAND,
-        types.ExecuteCommandOptions(commands=[REFRESH_INDEX_COMMAND]),
+        types.ExecuteCommandOptions(commands=[REFRESH_INDEX_COMMAND, INHERITANCE_TREE_COMMAND]),
     )
     def execute_command(
         ls: WitcherScriptLanguageServer,
         params: types.ExecuteCommandParams,
-    ) -> dict[str, int] | None:
+    ) -> object | None:
         """Run a workspace command requested by the LSP client.
 
         Args:
@@ -193,6 +197,14 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
             Command result payload for known commands, or ``None`` for unknown
             commands.
         """
+        if params.command == INHERITANCE_TREE_COMMAND:
+            class_name = (
+                str(params.arguments[0])
+                if params.arguments is not None and len(params.arguments) > 0
+                else ""
+            )
+            return inheritance_tree(ls.workspace_state.index, class_name)
+
         if params.command != REFRESH_INDEX_COMMAND:
             return None
 
@@ -257,6 +269,29 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
             params.position,
         )
 
+    @server.feature(types.TEXT_DOCUMENT_IMPLEMENTATION)
+    def implementation(
+        ls: WitcherScriptLanguageServer,
+        params: types.ImplementationParams,
+    ) -> list[types.Location]:
+        """Return derived classes or override-like member implementations.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Implementation request parameters.
+
+        Returns:
+            Implementation locations.
+        """
+        uri = params.text_document.uri
+        normalized_uri = normalize_file_uri(uri)
+        return implementations(
+            ls.workspace_state.index,
+            ls.document_text(uri),
+            normalized_uri,
+            params.position,
+        )
+
     @server.feature(types.TEXT_DOCUMENT_COMPLETION)
     def completion(
         ls: WitcherScriptLanguageServer,
@@ -277,6 +312,83 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
             normalize_file_uri(uri),
             ls.document_text(uri),
             params.position,
+        )
+
+    @server.feature(
+        types.TEXT_DOCUMENT_CODE_ACTION,
+        types.CodeActionOptions(code_action_kinds=[types.CodeActionKind.QuickFix]),
+    )
+    def code_action(
+        ls: WitcherScriptLanguageServer,
+        params: types.CodeActionParams,
+    ) -> list[types.CodeAction]:
+        """Return safe quick fixes for syntax, semantic, and config diagnostics.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Code action request parameters.
+
+        Returns:
+            Available code actions.
+        """
+        uri = params.text_document.uri
+        config = ls.workspace_state.config
+        config_uri = (
+            config.config_path.as_uri()
+            if config is not None and config.config_path is not None
+            else None
+        )
+        return code_actions(
+            ls.workspace_state.index,
+            ls.document_text(uri),
+            normalize_file_uri(uri),
+            params,
+            config_uri,
+        )
+
+    @server.feature(types.TEXT_DOCUMENT_PREPARE_RENAME)
+    def prepare_rename_symbol(
+        ls: WitcherScriptLanguageServer,
+        params: types.PrepareRenameParams,
+    ) -> types.Range | None:
+        """Return the local symbol range that can be renamed.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Prepare rename request parameters.
+
+        Returns:
+            Rename range when the symbol is supported.
+        """
+        uri = params.text_document.uri
+        return prepare_rename(
+            ls.workspace_state.index,
+            ls.document_text(uri),
+            normalize_file_uri(uri),
+            params.position,
+        )
+
+    @server.feature(types.TEXT_DOCUMENT_RENAME, types.RenameOptions(prepare_provider=True))
+    def rename(
+        ls: WitcherScriptLanguageServer,
+        params: types.RenameParams,
+    ) -> types.WorkspaceEdit | None:
+        """Rename a local variable or parameter within its function scope.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Rename request parameters.
+
+        Returns:
+            Workspace edit for supported local renames.
+        """
+        uri = params.text_document.uri
+        return rename_symbol(
+            ls.workspace_state.index,
+            ls.document_text(uri),
+            normalize_file_uri(uri),
+            params.position,
+            params.new_name,
         )
 
     @server.feature(

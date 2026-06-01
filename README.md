@@ -53,7 +53,7 @@ REDkit workflow commands.
 | Diagnostics | Lexer, parser, semantic, project, type, member, call, inheritance, duplicate symbol, and import diagnostics |
 | Workspace model | `witcherscript.toml`, source roots, vanilla roots, exclude rules, file watching, refresh command |
 | Symbol intelligence | Global symbols, per-file symbols, scope lookup, local variables, parameters, members, inheritance lookup |
-| Editor features | Document symbols, workspace symbols, definition, hover, completion, references, signature help |
+| Editor features | Document symbols, workspace symbols, definition, implementation, hover, completion, code actions, references, rename, signature help |
 | Type-aware completion | Type positions, `extends`, local scope, member access, keyword filtering, import suggestions |
 | Corpus tooling | Multi-file corpus scans, diagnostics summaries, parser coverage reporting, timing measurements |
 | REDkit tooling | Project detection, content repositories, config export, validation, recompile and launch process adapters |
@@ -141,14 +141,17 @@ The Python CLI is available through `uv run witcherscript`.
 
 ```bash
 uv run witcherscript version
+uv run witcherscript doctor
 uv run witcherscript parse path/to/file.ws
 uv run witcherscript corpus path/to/scripts
 uv run witcherscript corpus path/to/scripts --no-semantic
 ```
 
-`parse` prints a JSON representation of the parsed AST and diagnostics. `corpus`
-walks files and directories, runs the analyzer, and prints aggregate diagnostics
-and parser coverage data.
+`doctor` checks workspace health, project configuration, indexed files,
+diagnostics, REDkit CLI availability, and recompile configuration. `parse` prints
+a JSON representation of the parsed AST and diagnostics. `corpus` walks files
+and directories, runs the analyzer, and prints aggregate diagnostics and parser
+coverage data.
 
 ## REDkit CLI
 

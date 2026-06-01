@@ -99,6 +99,73 @@ def test_lsp_client_completion_hover_definition_references_and_signature_help(
     assert signature_help.signatures[0].label == "merge(left: int, right: int): int"
 
 
+def test_lsp_client_code_actions_rename_and_implementation(tmp_path: Path) -> None:
+    """Exercise quick fixes, local rename, and implementation lookup."""
+    player, _base, source = _write_workspace(tmp_path)
+    server = _initialized_server(tmp_path)
+    _open(server, player, source)
+
+    diagnostic_range = types.Range(
+        start=_position_after(source, "local.shared"),
+        end=_position_after(source, "local.shared"),
+    )
+    actions = cast(
+        "list[types.CodeAction]",
+        _request(server, types.TEXT_DOCUMENT_CODE_ACTION)(
+            types.CodeActionParams(
+                text_document=types.TextDocumentIdentifier(uri=player.as_uri()),
+                range=diagnostic_range,
+                context=types.CodeActionContext(
+                    diagnostics=[
+                        types.Diagnostic(
+                            range=diagnostic_range,
+                            message="Expected ';'.",
+                            code="WS2001",
+                        )
+                    ]
+                ),
+            )
+        ),
+    )
+    assert [action.title for action in actions] == ["Add missing semicolon"]
+
+    prepare = cast(
+        "types.Range",
+        _request(server, types.TEXT_DOCUMENT_PREPARE_RENAME)(
+            types.PrepareRenameParams(
+                text_document=types.TextDocumentIdentifier(uri=player.as_uri()),
+                position=_position_of(source, "local"),
+            )
+        ),
+    )
+    assert prepare.start == _position_of(source, "local")
+
+    edit = cast(
+        "types.WorkspaceEdit",
+        _request(server, types.TEXT_DOCUMENT_RENAME)(
+            types.RenameParams(
+                text_document=types.TextDocumentIdentifier(uri=player.as_uri()),
+                position=_position_of(source, "local"),
+                new_name="renamedLocal",
+            )
+        ),
+    )
+    assert edit.changes is not None
+    assert len(edit.changes[player.as_uri()]) == 3
+    assert {text_edit.new_text for text_edit in edit.changes[player.as_uri()]} == {"renamedLocal"}
+
+    implementations = cast(
+        "list[types.Location]",
+        _request(server, types.TEXT_DOCUMENT_IMPLEMENTATION)(
+            types.ImplementationParams(
+                text_document=types.TextDocumentIdentifier(uri=player.as_uri()),
+                position=_position_of(source, "Base"),
+            )
+        ),
+    )
+    assert [location.uri for location in implementations] == [player.as_uri()]
+
+
 def _write_workspace(root: Path) -> tuple[Path, Path, str]:
     scripts = root / "scripts"
     scripts.mkdir(parents=True)
