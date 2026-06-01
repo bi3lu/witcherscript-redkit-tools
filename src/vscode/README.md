@@ -1,38 +1,35 @@
 # WitcherScript REDkit Tools for VS Code
 
-VS Code harness for testing the WitcherScript language server and REDkit project tooling.
+VS Code extension for editing WitcherScript projects used with The Witcher 3
+REDkit. It connects VS Code to the Python language server and .NET REDkit CLI,
+then exposes the workflow through editor commands.
+
+## For Modders
+
+Install the `.vsix`, open your mod workspace, and run:
+
+```text
+WitcherScript: Doctor Setup
+```
+
+The doctor report checks `uv`, .NET SDK, `witcherscript.toml`, REDkit paths,
+vanilla script roots, LSP state, and REDkit CLI availability. Use it whenever
+the extension does not start cleanly or a REDkit command fails.
 
 ## Features
 
 - Activates for `.ws` files.
-- Starts the Python language server through a configurable local command.
-- Enables semantic highlighting for WitcherScript symbols.
+- Starts the WitcherScript language server through a configurable command.
+- Provides diagnostics, completion, hover, definition, references, signature
+  help, rename, implementations, symbols, and semantic highlighting.
 - Shows WitcherScript LSP status in the status bar.
+- Registers `WitcherScript: Doctor Setup`.
 - Registers `WitcherScript: Show Output Logs`.
 - Registers `WitcherScript: Refresh Project Index`.
 - Registers `WitcherScript: Initialize REDkit Config`.
 - Registers `WitcherScript: Recompile Scripts`.
 - Registers `WitcherScript: Launch Game`.
 - Registers `WitcherScript: Restart Language Server`.
-- Provides a debug launch configuration for Extension Host development.
-
-## Development
-
-Install extension dependencies:
-
-```bash
-npm install
-```
-
-Compile the extension:
-
-```bash
-npm run lint
-npm run check
-npm run compile
-```
-
-Open this folder in VS Code and run `Run WitcherScript Extension` from the debugger. The debug configuration opens `samples/minimal_project` as the test workspace.
 
 ## Settings
 
@@ -48,13 +45,24 @@ Open this folder in VS Code and run `Run WitcherScript Extension` from the debug
 }
 ```
 
-When `witcherscript.languageServer.cwd` is empty, packaged `.vsix` builds run the bundled language server from the extension install directory. Local development falls back to the repository root.
+When `witcherscript.languageServer.cwd` is empty, packaged `.vsix` builds run
+the bundled language server from the extension install directory. Local
+development falls back to the repository root.
 
-Set `witcherscript.languageServer.path` when you want to run a concrete executable, for example a virtualenv script or packaged language server. Keep `witcherscript.languageServer.args` empty for direct executables that need no extra arguments.
+When `witcherscript.redkit.args` is empty, packaged `.vsix` builds run the
+bundled C# CLI source through `dotnet run`. Local development falls back to the
+repository-local C# CLI project.
 
-When `witcherscript.redkit.args` is empty, packaged `.vsix` builds run the bundled C# CLI source through `dotnet run`. Local development falls back to the repository-local C# CLI project.
+## Development
 
-Packaged installs require `uv` for the Python language server and the .NET SDK for REDkit CLI commands.
+```bash
+npm ci --prefer-online
+npm run smoke
+```
+
+Open this folder in VS Code and run `Run WitcherScript Extension` from the
+debugger. The debug configuration opens `samples/minimal_project` as the test
+workspace.
 
 ## Packaging
 
@@ -64,10 +72,3 @@ Build a local `.vsix` from the repository root:
 uv run python scripts/prepare_vscode_package.py
 npm --prefix src/vscode run package:vsix -- --out ../../dist/witcherscript-redkit-tools.vsix
 ```
-
-## Daily Debugging
-
-- Use the WitcherScript status bar item to open logs.
-- Run `WitcherScript: Show Output Logs` when startup fails.
-- Run `WitcherScript: Restart Language Server` after changing Python code or `witcherscript.toml`.
-- Run `WitcherScript: Refresh Project Index` after changing files outside VS Code.

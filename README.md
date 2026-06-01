@@ -9,173 +9,69 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)
 ![Language Server Protocol](https://img.shields.io/badge/LSP-enabled-blue)
 
-WitcherScript REDkit Tools is an unofficial developer toolkit for working with
-WitcherScript source files and REDkit-style project layouts. It combines a Python
-Language Server Protocol implementation, a REDkit-focused .NET command-line
-tool, a VS Code client harness, and a fixture-driven test suite.
+WitcherScript REDkit Tools is an unofficial toolkit for editing, validating,
+and navigating WitcherScript projects used with The Witcher 3 REDkit. It
+provides a VS Code extension, a Python language server, developer CLI commands,
+and a .NET REDkit workflow CLI.
 
-The repository is designed around a clear separation of responsibilities:
-language analysis lives in Python, REDkit and Windows process integration lives
-in C#, and editor integration talks to the language server through standard LSP.
+The project is built around one rule: keep the language intelligence, REDkit
+project tooling, and editor integration separate. That makes the same core
+usable from VS Code, other LSP-capable editors, automated tests, and command
+line workflows.
 
-## I Just Want To Use This In VS Code
+## For Modders Using VS Code
 
-1. Download the latest `.vsix` from
-   [GitHub Releases](https://github.com/bi3lu/witcherscript-redkit-tools/releases).
-2. Install it in VS Code with `Extensions: Install from VSIX...`.
-3. Make sure `uv` and the .NET SDK are available on `PATH`; the packaged
-   extension includes the language server and REDkit CLI sources and runs them
-   locally.
-4. Open your mod workspace.
+1. Download the latest `.vsix` from [GitHub Releases](https://github.com/bi3lu/witcherscript-redkit-tools/releases).
+2. In VS Code, run `Extensions: Install from VSIX...`.
+3. Open your REDkit mod workspace.
+4. Run `WitcherScript: Doctor Setup`.
 5. Run `WitcherScript: Initialize REDkit Config`.
-6. Set Witcher 3 / REDkit paths if the generated config does not detect them.
+6. Open a `.ws` file and use the editor normally.
 
-The extension uses `witcherscript.toml` as the project configuration file. The
-initialize command creates that file for the current workspace, and the language
-server uses it for indexing, diagnostics, completion, hover, definition, and
-REDkit workflow commands.
+`Doctor Setup` is the first command to run when something does not work. It
+checks your workspace, `witcherscript.toml`, `uv`, .NET SDK, language server
+environment, REDkit CLI command, current LSP status, Witcher 3 path, REDkit
+path, script roots, vanilla script roots, and recompile executable setting. The
+report is written to the WitcherScript output panel with concrete `OK`,
+`WARNING`, and `ERROR` entries.
 
-## What It Provides
+Packaged `.vsix` builds include the language server and REDkit CLI source. The
+current package still uses local `uv` and .NET SDK installations to run those
+bundled tools, but the extension now tells you exactly which requirement is
+missing and where the failing command is configured.
 
-- **WitcherScript language server** with diagnostics, semantic highlighting,
-  symbol indexing, go to definition, hover, references, completion, signature
-  help, and semantic checks.
-- **Developer CLI** for parsing `.ws` files and running diagnostics across
-  WitcherScript corpora.
-- **REDkit tooling CLI** for project detection, `witcherscript.toml` generation,
-  validation, script recompilation adapters, and game launch adapters.
-- **VS Code extension harness** for daily language-server testing with status
-  feedback, output logs, restart support, and REDkit config initialization.
-- **Portable development workflow** through `uv`, .NET SDK pinning, Docker,
-  Dev Containers, GitHub Actions, and reproducible test fixtures.
+## Editor Features
 
-## Feature Snapshot
-
-| Area | Supported capabilities |
+| Feature | What you get in VS Code |
 | --- | --- |
-| Lexing and parsing | WitcherScript tokenization, structural AST, expression AST, parser recovery, snapshot coverage |
-| Diagnostics | Lexer, parser, semantic, project, type, member, call, inheritance, duplicate symbol, and import diagnostics |
-| Workspace model | `witcherscript.toml`, source roots, vanilla roots, exclude rules, file watching, refresh command |
-| Symbol intelligence | Global symbols, per-file symbols, scope lookup, local variables, parameters, members, inheritance lookup |
-| Editor features | Document symbols, workspace symbols, definition, implementation, hover, completion, code actions, references, rename, signature help, semantic highlighting |
-| Type-aware completion | Type positions, `extends`, local scope, member access, keyword filtering, import suggestions |
-| Corpus tooling | Multi-file corpus scans, diagnostics summaries, parser coverage reporting, timing measurements |
-| REDkit tooling | Project detection, content repositories, config export, validation, recompile and launch process adapters |
-| VS Code client | `.ws` activation, configurable LSP startup, status bar, output panel, restart and REDkit init commands |
+| Diagnostics | Syntax, project, type, inheritance, call, member, duplicate symbol, and import diagnostics |
+| Completion | Keywords, project symbols, type positions, `extends`, locals, parameters, fields, methods, and imports |
+| Navigation | Document symbols, workspace symbols, go to definition, references, and implementations |
+| Hover | Resolved symbol details, kind, type, container, and source location |
+| Signature help | Function parameter hints with active argument tracking |
+| Rename | Conservative rename for local variables and function parameters |
+| Code actions | Quick fixes for missing config, typo-like symbol issues, missing semicolons, and missing braces |
+| Semantic highlighting | Classes, functions, methods, fields, locals, parameters, built-in types, events, native symbols, and deprecated symbols |
+| REDkit workflow | Config initialization, index refresh, script recompile command, game launch command, and setup doctor |
 
-## Repository Layout
+## Project Components
 
-```text
-.
-├─ docs/                         Project documentation
-├─ samples/                      WitcherScript samples and workspace fixtures
-├─ src/
-│  ├─ py/                        Python language server and developer CLI
-│  ├─ dotnet/                    C# REDkit tooling solution
-│  └─ vscode/                    VS Code language-server client
-├─ tests/py/                     Python tests, integration fixtures, and snapshots
-├─ Dockerfile                    Development container image
-├─ CHANGELOG.md                  Release history
-├─ docker-compose.yml            Container workflow
-├─ global.json                   .NET SDK pin
-├─ Makefile                      Common local commands
-├─ pyproject.toml                Python package and tooling configuration
-├─ VERSION                       Release version source of truth
-└─ uv.lock                       Locked Python dependencies
-```
-
-## Contributor Requirements
-
-- Python 3.12
-- [uv](https://docs.astral.sh/uv/)
-- .NET SDK 10.0, selected by `global.json`
-- Node.js 22 for the VS Code extension
-- Docker, when using the container workflow
-
-REDkit and The Witcher 3 are Windows-native tools. The language server, parser,
-CLI tests, and VS Code extension checks run on macOS, Linux, and Windows. REDkit
-process commands require paths to a real Windows installation.
-
-## Contributor Quick Start
-
-Install Python dependencies:
-
-```bash
-uv sync --all-extras --dev
-```
-
-Restore the .NET solution:
-
-```bash
-dotnet restore src/dotnet/WitcherScript.RedkitTooling.sln
-```
-
-Install VS Code extension dependencies:
-
-```bash
-npm --prefix src/vscode ci
-```
-
-Parse a sample WitcherScript file:
-
-```bash
-uv run witcherscript parse samples/scripts/valid/minimal_class.ws
-```
-
-Run a corpus diagnostics report:
-
-```bash
-uv run witcherscript corpus samples/fixtures/corpus_project
-```
-
-Start the language server over standard input and output:
-
-```bash
-uv run witcherscript-lsp
-```
-
-The language server is normally launched by an LSP client. During initialization
-it reads the workspace root, loads `witcherscript.toml` when present, indexes
-configured `.ws` files, and keeps open documents synchronized with editor
-changes.
-
-## Developer CLI
-
-The Python CLI is available through `uv run witcherscript`.
-
-```bash
-uv run witcherscript version
-uv run witcherscript doctor
-uv run witcherscript parse path/to/file.ws
-uv run witcherscript corpus path/to/scripts
-uv run witcherscript corpus path/to/scripts --no-semantic
-```
-
-`doctor` checks workspace health, project configuration, indexed files,
-diagnostics, REDkit CLI availability, and recompile configuration. `parse` prints
-a JSON representation of the parsed AST and diagnostics. `corpus` walks files
-and directories, runs the analyzer, and prints aggregate diagnostics and parser
-coverage data.
-
-## REDkit CLI
-
-The REDkit CLI lives in the .NET solution and can be run directly from source:
-
-```bash
-dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- detect --project-dir <path>
-dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- init --project-dir <path> --force
-dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- print-config --project-dir <path>
-dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- validate --project-dir <path>
-dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- recompile --project-dir <path> --executable <path>
-dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- launch-game --project-dir <path>
-```
-
-`init` writes `witcherscript.toml`, which is the exchange format consumed by the
-language server.
+- **VS Code extension**: editor activation, commands, output panel, setup
+  doctor, status bar, LSP lifecycle, and REDkit workflow buttons.
+- **Python language server**: parser, analyzer, project index, diagnostics,
+  completion, hover, definition, references, rename, semantic tokens, and
+  signature help.
+- **Python CLI**: parser inspection, project doctor, and corpus diagnostics.
+- **.NET REDkit CLI**: REDkit project detection, `witcherscript.toml`
+  generation, validation, recompile adapters, and game launch adapters.
+- **Test fixtures**: sample projects, parser snapshots, semantic tests, LSP
+  integration tests, and corpus coverage checks.
 
 ## Workspace Configuration
 
-Place `witcherscript.toml` at the workspace root:
+The language server reads `witcherscript.toml` from the workspace root. Create
+it from VS Code with `WitcherScript: Initialize REDkit Config` or from the
+REDkit CLI with `init`.
 
 ```toml
 [project]
@@ -206,39 +102,74 @@ exclude = [
 ```
 
 Relative paths are resolved from the workspace root. Absolute paths are used as
-written. If the file is not present, the language server indexes the workspace
-root with default exclude rules.
+written. If the config file is missing, the language server can still index the
+workspace root with default exclude rules, but project-aware features work best
+with explicit script roots.
 
-## VS Code Extension
+## VS Code Commands
 
-The VS Code client harness is located in `src/vscode`.
-
-```bash
-npm --prefix src/vscode ci
-npm --prefix src/vscode run compile
-```
-
-Open `src/vscode` in VS Code, start the `Run WitcherScript Extension` debug
-configuration, and open a `.ws` file in the Extension Development Host.
-
-Useful commands:
-
-- `WitcherScript: Refresh Project Index`
+- `WitcherScript: Doctor Setup`
 - `WitcherScript: Initialize REDkit Config`
+- `WitcherScript: Refresh Project Index`
 - `WitcherScript: Recompile Scripts`
 - `WitcherScript: Launch Game`
 - `WitcherScript: Restart Language Server`
 - `WitcherScript: Show Output Logs`
 
-See [docs/vscode-extension.md](docs/vscode-extension.md) for settings, launch
-configuration, and troubleshooting notes.
+See [docs/vscode-extension.md](docs/vscode-extension.md) for settings,
+packaging details, daily debugging, and troubleshooting guidance.
 
-## Quality Gates
+## Command Line Usage
 
-GitHub Actions runs Python, .NET, and VS Code extension checks on `main` and
-`develop` pull requests and pushes.
+Python developer CLI:
 
-Run the same checks locally:
+```bash
+uv run witcherscript version
+uv run witcherscript doctor
+uv run witcherscript parse path/to/file.ws
+uv run witcherscript corpus path/to/scripts
+uv run witcherscript corpus path/to/scripts --no-semantic
+```
+
+REDkit CLI from source:
+
+```bash
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- detect --project-dir <path>
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- init --project-dir <path> --force
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- print-config --project-dir <path>
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- validate --project-dir <path>
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- recompile --project-dir <path> --executable <path>
+dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- launch-game --project-dir <path>
+```
+
+## Developer Setup
+
+Requirements:
+
+- Python 3.12
+- [uv](https://docs.astral.sh/uv/)
+- .NET SDK 10.0, selected by [global.json](global.json)
+- Node.js 22 for the VS Code extension
+- Docker, when using the container workflow
+
+Install dependencies:
+
+```bash
+uv sync --all-extras --dev
+dotnet restore src/dotnet/WitcherScript.RedkitTooling.sln
+npm --prefix src/vscode ci --prefer-online
+```
+
+Useful local commands:
+
+```bash
+uv run witcherscript parse samples/scripts/valid/minimal_class.ws
+uv run witcherscript corpus samples/fixtures/corpus_project
+uv run witcherscript-lsp
+npm --prefix src/vscode run smoke
+```
+
+Run the same quality gates used by CI:
 
 ```bash
 uv run ruff check .
@@ -247,41 +178,49 @@ uv run mypy src/py
 uv run pytest --cov=src/py
 dotnet test src/dotnet/WitcherScript.RedkitTooling.sln
 npm --prefix src/vscode run smoke
+uv run python scripts/sync_version.py --check
 ```
 
-Package the installable VS Code extension locally:
+## Packaging The Extension
+
+Build the installable VS Code package locally:
 
 ```bash
 uv run python scripts/prepare_vscode_package.py
 npm --prefix src/vscode run package:vsix -- --out ../../dist/witcherscript-redkit-tools.vsix
 ```
 
-Published GitHub Releases automatically attach a `.vsix` asset.
+Published GitHub Releases attach a `.vsix` asset automatically.
 
-Common shortcuts are available through `make`:
+## Repository Layout
 
-```bash
-make sync
-make lint
-make test
-make version-check
+```text
+.
+├─ docs/                         Project documentation
+├─ samples/                      WitcherScript samples and workspace fixtures
+├─ src/
+│  ├─ py/                        Python language server and developer CLI
+│  ├─ dotnet/                    C# REDkit tooling solution
+│  └─ vscode/                    VS Code extension
+├─ tests/py/                     Python tests, integration fixtures, and snapshots
+├─ Dockerfile                    Development container image
+├─ CHANGELOG.md                  Release history
+├─ docker-compose.yml            Container workflow
+├─ global.json                   .NET SDK pin
+├─ Makefile                      Common local commands
+├─ pyproject.toml                Python package and tooling configuration
+├─ VERSION                       Release version source of truth
+└─ uv.lock                       Locked Python dependencies
 ```
 
 ## Versioning
 
-The repository uses [VERSION](VERSION) as the source of truth for release
-metadata. The version is synchronized into Python package metadata, the Python
-runtime package, the VS Code extension package files, and .NET project metadata.
-
-Update the release version with:
+[VERSION](VERSION) is the source of truth for release metadata. The value is
+synchronized into Python package metadata, Python runtime package metadata, VS
+Code extension package files, and .NET project metadata.
 
 ```bash
 uv run python scripts/sync_version.py
-```
-
-Check that metadata is synchronized with:
-
-```bash
 uv run python scripts/sync_version.py --check
 ```
 
@@ -289,21 +228,9 @@ Release changes are documented in [CHANGELOG.md](CHANGELOG.md).
 
 ## Docker Workflow
 
-Build the development image:
-
 ```bash
 docker compose build dev
-```
-
-Run tests inside the container:
-
-```bash
 docker compose run --rm dev make test
-```
-
-Open an interactive shell:
-
-```bash
 docker compose run --rm dev
 ```
 
@@ -315,17 +242,17 @@ Containers, and Windows path mounts.
 - [Architecture](docs/architecture.md)
 - [Changelog](CHANGELOG.md)
 - [Contributing](.github/CONTRIBUTING.md)
+- [Corpus Testing](docs/corpus.md)
 - [Language Server Features](docs/lsp-features.md)
 - [REDkit Project Model](docs/redkit-project-model.md)
 - [Security Policy](.github/SECURITY.md)
-- [WitcherScript Language Notes](docs/witcherscript-notes.md)
-- [Corpus Testing](docs/corpus.md)
 - [VS Code Extension](docs/vscode-extension.md)
+- [WitcherScript Language Notes](docs/witcherscript-notes.md)
 - [Containers](docs/containers.md)
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
 
-This is an unofficial community project and is not affiliated with or endorsed by
-CD PROJEKT RED.
+This is an unofficial community project and is not affiliated with or endorsed
+by CD PROJEKT RED.

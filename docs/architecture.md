@@ -59,6 +59,23 @@ Important modules:
 - `analysis/inheritance.py`: class inheritance lookup
 - `completion.py`, `definition.py`, `hover.py`, `references.py`, `symbols.py`: LSP feature providers
 
+## VS Code Extension
+
+The VS Code extension under `src/vscode` is a thin client around the language
+server and REDkit CLI. It owns editor activation, command registration, status
+UI, output logs, and user-facing setup diagnostics.
+
+Important modules:
+
+- `extension.ts`: activation, command registration, and dependency wiring
+- `languageServer.ts`: LSP lifecycle, restart, startup errors, and index refresh
+- `redkitCommands.ts`: REDkit config initialization, recompile, and game launch
+- `setupDoctor.ts`: setup checklist for modders and developers
+- `configuration.ts`: VS Code settings mapped to command-line models
+- `paths.ts`: workspace, path expansion, file checks, and lightweight TOML helpers
+- `statusBar.ts`: status bar presentation
+- `process.ts`: child process helper used by setup checks
+
 ## C# REDkit Tooling
 
 The .NET solution under `src/dotnet` owns REDkit-oriented project data and CLI integration.

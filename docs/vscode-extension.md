@@ -1,39 +1,77 @@
 # VS Code Extension
 
-The VS Code extension under `src/vscode` is a lightweight client for exercising the WitcherScript language server in a real editor. It is intentionally small: the language behavior stays in the Python LSP, while REDkit project operations stay in the C# CLI.
+The VS Code extension is the recommended way to use WitcherScript REDkit Tools
+while editing mods. It starts the WitcherScript language server, exposes REDkit
+workflow commands, keeps a visible status bar item, and provides a setup doctor
+for checking local requirements.
 
-## Capabilities
+The extension is intentionally a thin client. Language behavior stays in the
+Python LSP, REDkit operations stay in the .NET CLI, and VS Code is responsible
+for wiring those tools into a familiar editor workflow.
 
-- Activates for `.ws` files through the `witcherscript` language id.
+## For Modders
+
+Install the `.vsix`, open your mod workspace, then run:
+
+```text
+WitcherScript: Doctor Setup
+```
+
+The doctor report opens in the `WitcherScript` output panel and checks the
+things that most often break first-time setup:
+
+- open workspace folder
+- `witcherscript.toml`
+- `uv`
+- bundled Python CLI environment
+- .NET SDK
+- REDkit CLI command
+- current LSP state
+- Witcher 3 path
+- REDkit path
+- REDkit project path
+- source roots
+- vanilla script roots
+- recompile executable setting
+
+After the report is clean enough for your workflow, run:
+
+```text
+WitcherScript: Initialize REDkit Config
+```
+
+This creates or updates `witcherscript.toml`, then refreshes the language server
+index.
+
+## Editing Features
+
+- Activates for `.ws` files.
 - Starts the Python language server over standard input and output.
-- Watches `.ws` files and `witcherscript.toml` for workspace changes.
+- Watches `.ws` files and `witcherscript.toml`.
+- Shows LSP state in the status bar.
+- Opens dedicated WitcherScript output logs.
+- Provides diagnostics, hover, completion, definition, references, rename,
+  signature help, implementations, and document/workspace symbols.
 - Enables semantic highlighting for classes, functions, methods, fields, local
   variables, parameters, built-in types, events, native symbols, and deprecated
   symbols.
-- Shows LSP status in the VS Code status bar.
-- Exposes `WitcherScript: Show Output Logs`.
-- Exposes `WitcherScript: Refresh Project Index`.
-- Exposes `WitcherScript: Initialize REDkit Config`.
-- Exposes `WitcherScript: Recompile Scripts`.
-- Exposes `WitcherScript: Launch Game`.
-- Exposes `WitcherScript: Restart Language Server`.
-- Provides Extension Host debug configuration.
+- Exposes REDkit config, recompile, and launch commands.
 
-## Local Setup
+## Commands
 
-Install dependencies from the extension directory:
+| Command | Purpose |
+| --- | --- |
+| `WitcherScript: Doctor Setup` | Runs the setup checklist and opens the report |
+| `WitcherScript: Initialize REDkit Config` | Creates `witcherscript.toml` using the REDkit CLI |
+| `WitcherScript: Refresh Project Index` | Rebuilds the LSP project index |
+| `WitcherScript: Recompile Scripts` | Runs the configured REDkit recompile executable |
+| `WitcherScript: Launch Game` | Starts The Witcher 3 through the REDkit CLI workflow |
+| `WitcherScript: Restart Language Server` | Stops and starts the LSP client |
+| `WitcherScript: Show Output Logs` | Opens the WitcherScript output channel |
 
-```bash
-cd src/vscode
-npm install
-npm run compile
-```
+## Settings
 
-Open `src/vscode` in VS Code and run the `Run WitcherScript Extension` launch configuration. The debug host opens `samples/minimal_project`, which contains a sample `witcherscript.toml` and `.ws` file.
-
-## Language Server Settings
-
-The extension starts the server with these defaults:
+Default language server settings:
 
 ```json
 {
@@ -45,14 +83,12 @@ The extension starts the server with these defaults:
 }
 ```
 
-When `witcherscript.languageServer.cwd` is empty, the extension uses the bundled
-language server in packaged `.vsix` builds. During local extension development it
-falls back to the repository root.
+When `witcherscript.languageServer.cwd` is empty, packaged `.vsix` builds run
+the bundled server from the extension install directory. Local extension
+development falls back to the repository root.
 
-Use absolute paths, `${extensionPath}`, or `${workspaceFolder}` when testing
-against projects outside this repository.
-
-Set `witcherscript.languageServer.path` to a concrete executable when you do not want to rely on `uv` from `PATH`. For example:
+Set `witcherscript.languageServer.path` when you want to run a concrete
+executable, for example a virtualenv script or a packaged language server:
 
 ```json
 {
@@ -61,29 +97,18 @@ Set `witcherscript.languageServer.path` to a concrete executable when you do not
 }
 ```
 
-The status bar item opens the WitcherScript output channel. Startup failures also offer actions for opening logs or the language server settings.
+Default REDkit settings:
 
-## Daily Debugging Workflow
-
-1. Open `src/vscode` in VS Code.
-2. Run `npm install` and `npm run compile`.
-3. Start `Run WitcherScript Extension`.
-4. Use the debug host status bar item to inspect LSP state.
-5. Run `WitcherScript: Restart Language Server` after Python or configuration changes.
-6. Run `WitcherScript: Refresh Project Index` after external file changes.
-
-## REDkit Tooling Settings
-
-By default, `WitcherScript: Initialize REDkit Config` runs the repository-local C# CLI project:
-
-```bash
-dotnet run --project src/dotnet/src/WitcherScript.RedkitTooling.Cli -- init --project-dir <workspace>
+```json
+{
+  "witcherscript.redkit.command": "dotnet",
+  "witcherscript.redkit.args": []
+}
 ```
 
-In packaged `.vsix` builds, the extension runs the bundled REDkit CLI source
-through `dotnet run`.
-
-Override the command when using a packaged CLI:
+When `witcherscript.redkit.args` is empty, packaged `.vsix` builds run the
+bundled C# CLI source through `dotnet run`. If you install a standalone
+`ws-redkit` executable later, configure:
 
 ```json
 {
@@ -92,10 +117,7 @@ Override the command when using a packaged CLI:
 }
 ```
 
-The command refreshes the LSP project index after `witcherscript.toml` is generated.
-If `witcherscript.toml` already exists, the extension asks before calling `init --force`.
-
-Script recompilation requires an executable configured for the REDkit workflow:
+Script recompilation requires an executable configured for your REDkit setup:
 
 ```json
 {
@@ -103,7 +125,8 @@ Script recompilation requires an executable configured for the REDkit workflow:
 }
 ```
 
-Game launch can either use the executable resolved by the C# CLI from `witcherscript.toml` or an explicit override:
+Game launch can use the executable resolved from `witcherscript.toml` or an
+explicit override:
 
 ```json
 {
@@ -111,6 +134,57 @@ Game launch can either use the executable resolved by the C# CLI from `witchersc
   "witcherscript.redkit.launch.args": ["-debugscripts"]
 }
 ```
+
+## Troubleshooting
+
+Run `WitcherScript: Doctor Setup` first. The report is designed to answer:
+
+- Is the workspace folder correct?
+- Is `witcherscript.toml` present?
+- Does VS Code see `uv` and `.NET SDK`?
+- Can the bundled language server environment run?
+- Can the REDkit CLI command run?
+- Are Witcher 3 and REDkit paths valid?
+- Is the language server currently running?
+
+Then use:
+
+- `WitcherScript: Show Output Logs` for raw LSP and command output.
+- `WitcherScript: Restart Language Server` after changing Python code,
+  extension settings, or `witcherscript.toml`.
+- `WitcherScript: Refresh Project Index` after external file changes.
+
+## Extension Source Layout
+
+The extension source is split by responsibility:
+
+```text
+src/vscode/src/
+├─ extension.ts          activation and command registration
+├─ languageServer.ts     LSP lifecycle, restart, and index refresh
+├─ redkitCommands.ts     REDkit init, recompile, and launch commands
+├─ setupDoctor.ts        setup checklist and report rendering
+├─ configuration.ts      VS Code settings to command-line models
+├─ paths.ts              workspace, path, and lightweight TOML helpers
+├─ statusBar.ts          status bar presentation
+├─ process.ts            child process helper
+├─ constants.ts          command ids and config section
+└─ types.ts              shared TypeScript interfaces
+```
+
+## Local Development
+
+Install dependencies from the extension directory:
+
+```bash
+cd src/vscode
+npm ci --prefer-online
+npm run smoke
+```
+
+Open `src/vscode` in VS Code and run the `Run WitcherScript Extension` launch
+configuration. The debug host opens `samples/minimal_project`, which contains a
+sample `witcherscript.toml` and `.ws` file.
 
 ## Release Packaging
 
@@ -120,9 +194,6 @@ package includes:
 - compiled VS Code extension JavaScript
 - Python language server source under `server/`
 - REDkit C# CLI source under `redkit/`
-
-Packaged installs still require `uv` for the Python language server and the .NET
-SDK for REDkit CLI commands.
 
 Build the same package locally:
 
