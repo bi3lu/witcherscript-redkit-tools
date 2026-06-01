@@ -90,7 +90,7 @@ jobs:
           cache-dependency-path: src/vscode/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-online
 
       - name: ESLint
         run: npm run lint
