@@ -89,20 +89,31 @@ def _sync_json_version(path: Path, version: str, *, check: bool) -> bool:
 def _sync_dotnet_props(version: str, *, check: bool) -> bool:
     path = ROOT / "src" / "dotnet" / "Directory.Build.props"
     text = path.read_text(encoding="utf-8")
+    assembly_version = _dotnet_assembly_version(version)
     updated = re.sub(r"<Version>[^<]+</Version>", f"<Version>{version}</Version>", text, count=1)
     updated = re.sub(
         r"<AssemblyVersion>[^<]+</AssemblyVersion>",
-        f"<AssemblyVersion>{version}</AssemblyVersion>",
+        f"<AssemblyVersion>{assembly_version}</AssemblyVersion>",
         updated,
         count=1,
     )
     updated = re.sub(
         r"<FileVersion>[^<]+</FileVersion>",
-        f"<FileVersion>{version}</FileVersion>",
+        f"<FileVersion>{assembly_version}</FileVersion>",
         updated,
         count=1,
     )
     return _write_if_changed(path, text, updated, check=check)
+
+
+def _dotnet_assembly_version(version: str) -> str:
+    numeric_version = version.split("-", maxsplit=1)[0].split("+", maxsplit=1)[0]
+    parts = numeric_version.split(".")
+
+    if len(parts) < 3:
+        parts.extend("0" for _ in range(3 - len(parts)))
+
+    return ".".join(parts[:4])
 
 
 def _write_if_changed(path: Path, original: str, updated: str, *, check: bool) -> bool:

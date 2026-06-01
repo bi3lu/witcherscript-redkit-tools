@@ -2,7 +2,7 @@
   "name": "witcherscript-redkit-tools",
   "displayName": "WitcherScript REDkit Tools",
   "description": "VS Code client for the WitcherScript language server and REDkit project tooling.",
-  "version": "0.4.1",
+  "version": "0.4.2-alpha",
   "publisher": "witcherscript",
   "license": "MIT",
   "repository": {
