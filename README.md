@@ -298,10 +298,10 @@ Containers, and Windows path mounts.
 
 - [Architecture](docs/architecture.md)
 - [Changelog](CHANGELOG.md)
-- [Contributing](CONTRIBUTING.md)
+- [Contributing](.github/CONTRIBUTING.md)
 - [Language Server Features](docs/lsp-features.md)
 - [REDkit Project Model](docs/redkit-project-model.md)
-- [Security Policy](SECURITY.md)
+- [Security Policy](.github/SECURITY.md)
 - [WitcherScript Language Notes](docs/witcherscript-notes.md)
 - [Corpus Testing](docs/corpus.md)
 - [VS Code Extension](docs/vscode-extension.md)
