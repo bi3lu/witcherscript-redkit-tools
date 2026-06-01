@@ -419,7 +419,11 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
 
     @server.feature(
         types.TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
-        types.SemanticTokensOptions(legend=SEMANTIC_TOKENS_LEGEND, full=True),
+        types.SemanticTokensRegistrationOptions(
+            legend=SEMANTIC_TOKENS_LEGEND,
+            document_selector=None,
+            full=True,
+        ),
     )
     def semantic_tokens_full(
         ls: WitcherScriptLanguageServer,
