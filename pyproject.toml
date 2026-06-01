@@ -1,6 +1,6 @@
 [project]
 name = "witcherscript-langserver"
-version = "0.4.0"
+version = "0.4.1"
 description = "WitcherScript Language Server and REDkit tooling integration"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -24,8 +24,6 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-  "black>=25.0.0",
-  "isort>=6.0.0",
   "mypy>=1.10.0",
   "pre-commit>=3.7.0",
   "pytest>=8.0.0",
@@ -63,19 +61,6 @@ known-first-party = [
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-
-[tool.black]
-target-version = ["py312"]
-line-length = 100
-
-[tool.isort]
-profile = "black"
-line_length = 100
-src_paths = ["src/py", "tests/py"]
-known_first_party = [
-  "witcherscript_cli",
-  "witcherscript_langserver",
-]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/py"]
