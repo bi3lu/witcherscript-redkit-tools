@@ -18,10 +18,28 @@ The repository is designed around a clear separation of responsibilities:
 language analysis lives in Python, REDkit and Windows process integration lives
 in C#, and editor integration talks to the language server through standard LSP.
 
+## I Just Want To Use This In VS Code
+
+1. Download the latest `.vsix` from
+   [GitHub Releases](https://github.com/bi3lu/witcherscript-redkit-tools/releases).
+2. Install it in VS Code with `Extensions: Install from VSIX...`.
+3. Make sure `uv` and the .NET SDK are available on `PATH`; the packaged
+   extension includes the language server and REDkit CLI sources and runs them
+   locally.
+4. Open your mod workspace.
+5. Run `WitcherScript: Initialize REDkit Config`.
+6. Set Witcher 3 / REDkit paths if the generated config does not detect them.
+
+The extension uses `witcherscript.toml` as the project configuration file. The
+initialize command creates that file for the current workspace, and the language
+server uses it for indexing, diagnostics, completion, hover, definition, and
+REDkit workflow commands.
+
 ## What It Provides
 
-- **WitcherScript language server** with diagnostics, symbol indexing, go to
-  definition, hover, references, completion, signature help, and semantic checks.
+- **WitcherScript language server** with diagnostics, semantic highlighting,
+  symbol indexing, go to definition, hover, references, completion, signature
+  help, and semantic checks.
 - **Developer CLI** for parsing `.ws` files and running diagnostics across
   WitcherScript corpora.
 - **REDkit tooling CLI** for project detection, `witcherscript.toml` generation,
@@ -39,7 +57,7 @@ in C#, and editor integration talks to the language server through standard LSP.
 | Diagnostics | Lexer, parser, semantic, project, type, member, call, inheritance, duplicate symbol, and import diagnostics |
 | Workspace model | `witcherscript.toml`, source roots, vanilla roots, exclude rules, file watching, refresh command |
 | Symbol intelligence | Global symbols, per-file symbols, scope lookup, local variables, parameters, members, inheritance lookup |
-| Editor features | Document symbols, workspace symbols, definition, hover, completion, references, signature help |
+| Editor features | Document symbols, workspace symbols, definition, implementation, hover, completion, code actions, references, rename, signature help, semantic highlighting |
 | Type-aware completion | Type positions, `extends`, local scope, member access, keyword filtering, import suggestions |
 | Corpus tooling | Multi-file corpus scans, diagnostics summaries, parser coverage reporting, timing measurements |
 | REDkit tooling | Project detection, content repositories, config export, validation, recompile and launch process adapters |
@@ -57,14 +75,16 @@ in C#, and editor integration talks to the language server through standard LSP.
 │  └─ vscode/                    VS Code language-server client
 ├─ tests/py/                     Python tests, integration fixtures, and snapshots
 ├─ Dockerfile                    Development container image
+├─ CHANGELOG.md                  Release history
 ├─ docker-compose.yml            Container workflow
 ├─ global.json                   .NET SDK pin
 ├─ Makefile                      Common local commands
 ├─ pyproject.toml                Python package and tooling configuration
+├─ VERSION                       Release version source of truth
 └─ uv.lock                       Locked Python dependencies
 ```
 
-## Requirements
+## Contributor Requirements
 
 - Python 3.12
 - [uv](https://docs.astral.sh/uv/)
@@ -76,7 +96,7 @@ REDkit and The Witcher 3 are Windows-native tools. The language server, parser,
 CLI tests, and VS Code extension checks run on macOS, Linux, and Windows. REDkit
 process commands require paths to a real Windows installation.
 
-## Quick Start
+## Contributor Quick Start
 
 Install Python dependencies:
 
@@ -125,14 +145,17 @@ The Python CLI is available through `uv run witcherscript`.
 
 ```bash
 uv run witcherscript version
+uv run witcherscript doctor
 uv run witcherscript parse path/to/file.ws
 uv run witcherscript corpus path/to/scripts
 uv run witcherscript corpus path/to/scripts --no-semantic
 ```
 
-`parse` prints a JSON representation of the parsed AST and diagnostics. `corpus`
-walks files and directories, runs the analyzer, and prints aggregate diagnostics
-and parser coverage data.
+`doctor` checks workspace health, project configuration, indexed files,
+diagnostics, REDkit CLI availability, and recompile configuration. `parse` prints
+a JSON representation of the parsed AST and diagnostics. `corpus` walks files
+and directories, runs the analyzer, and prints aggregate diagnostics and parser
+coverage data.
 
 ## REDkit CLI
 
@@ -202,6 +225,8 @@ Useful commands:
 
 - `WitcherScript: Refresh Project Index`
 - `WitcherScript: Initialize REDkit Config`
+- `WitcherScript: Recompile Scripts`
+- `WitcherScript: Launch Game`
 - `WitcherScript: Restart Language Server`
 - `WitcherScript: Show Output Logs`
 
@@ -224,13 +249,43 @@ dotnet test src/dotnet/WitcherScript.RedkitTooling.sln
 npm --prefix src/vscode run smoke
 ```
 
+Package the installable VS Code extension locally:
+
+```bash
+uv run python scripts/prepare_vscode_package.py
+npm --prefix src/vscode run package:vsix -- --out ../../dist/witcherscript-redkit-tools.vsix
+```
+
+Published GitHub Releases automatically attach a `.vsix` asset.
+
 Common shortcuts are available through `make`:
 
 ```bash
 make sync
 make lint
 make test
+make version-check
 ```
+
+## Versioning
+
+The repository uses [VERSION](VERSION) as the source of truth for release
+metadata. The version is synchronized into Python package metadata, the Python
+runtime package, the VS Code extension package files, and .NET project metadata.
+
+Update the release version with:
+
+```bash
+uv run python scripts/sync_version.py
+```
+
+Check that metadata is synchronized with:
+
+```bash
+uv run python scripts/sync_version.py --check
+```
+
+Release changes are documented in [CHANGELOG.md](CHANGELOG.md).
 
 ## Docker Workflow
 
@@ -258,8 +313,11 @@ Containers, and Windows path mounts.
 ## Documentation
 
 - [Architecture](docs/architecture.md)
+- [Changelog](CHANGELOG.md)
+- [Contributing](.github/CONTRIBUTING.md)
 - [Language Server Features](docs/lsp-features.md)
 - [REDkit Project Model](docs/redkit-project-model.md)
+- [Security Policy](.github/SECURITY.md)
 - [WitcherScript Language Notes](docs/witcherscript-notes.md)
 - [Corpus Testing](docs/corpus.md)
 - [VS Code Extension](docs/vscode-extension.md)

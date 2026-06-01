@@ -1,6 +1,11 @@
-node_modules/
 out/**/*.map
 .vscode/
 src/
 tsconfig.json
 *.vsix
+server/.venv/
+server/**/*.pyc
+server/**/__pycache__/
+redkit/**/bin/
+redkit/**/obj/
+redkit/**/*.user

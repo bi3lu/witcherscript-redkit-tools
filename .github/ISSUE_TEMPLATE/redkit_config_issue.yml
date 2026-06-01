@@ -1,0 +1,41 @@
+name: REDkit path/config issue
+description: Report REDkit, Witcher 3, or project path detection problems.
+title: "[REDkit Config]: "
+labels: ["bug", "redkit"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+    validations:
+      required: true
+  - type: textarea
+    id: layout
+    attributes:
+      label: Installation and project layout
+      description: Include sanitized game, REDkit, and project paths.
+      placeholder: |
+        Game directory:
+        REDkit directory:
+        Project directory:
+        Script roots:
+    validations:
+      required: true
+  - type: textarea
+    id: command_output
+    attributes:
+      label: CLI output
+      description: Paste `ws-redkit detect`, `init`, or `validate --json` output.
+      render: text
+  - type: textarea
+    id: config
+    attributes:
+      label: witcherscript.toml
+      render: toml
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Windows 11, macOS, Linux
+    validations:
+      required: true

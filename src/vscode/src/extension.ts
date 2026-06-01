@@ -1,4 +1,5 @@
 import * as cp from "node:child_process";
+import * as fs from "node:fs";
 import * as path from "node:path";
 import * as vscode from "vscode";
 import { LanguageClient, State } from "vscode-languageclient/node";
@@ -274,14 +275,19 @@ async function recompileRedkitScripts(context: vscode.ExtensionContext): Promise
       title: "Recompiling WitcherScript scripts",
     },
     async () => {
-      await executeRedkitCommand(command, [
-        ...args,
-        "recompile",
-        "--project-dir",
-        workspaceFolder.uri.fsPath,
-        "--executable",
-        executable,
-      ], "REDkit script recompilation", "WitcherScript scripts recompiled.");
+      await executeRedkitCommand(
+        command,
+        [
+          ...args,
+          "recompile",
+          "--project-dir",
+          workspaceFolder.uri.fsPath,
+          "--executable",
+          executable,
+        ],
+        "REDkit script recompilation",
+        "WitcherScript scripts recompiled.",
+      );
     },
   );
 }
@@ -325,7 +331,12 @@ async function launchGame(context: vscode.ExtensionContext): Promise<void> {
       title: "Launching The Witcher 3",
     },
     async () => {
-      await executeRedkitCommand(command, commandArgs, "REDkit game launch", "The Witcher 3 launched.");
+      await executeRedkitCommand(
+        command,
+        commandArgs,
+        "REDkit game launch",
+        "The Witcher 3 launched.",
+      );
     },
   );
 }
@@ -339,25 +350,30 @@ function executeRedkitCommand(
   outputChannel?.appendLine(`Running REDkit tooling: ${command} ${args.join(" ")}`);
 
   return new Promise((resolve, reject) => {
-    cp.execFile(command, args, { maxBuffer: 1024 * 1024 * 8, windowsHide: true }, (error, stdout, stderr) => {
-      if (stdout.length > 0) {
-        outputChannel?.append(stdout);
-      }
+    cp.execFile(
+      command,
+      args,
+      { maxBuffer: 1024 * 1024 * 8, windowsHide: true },
+      (error, stdout, stderr) => {
+        if (stdout.length > 0) {
+          outputChannel?.append(stdout);
+        }
 
-      if (stderr.length > 0) {
-        outputChannel?.append(stderr);
-      }
+        if (stderr.length > 0) {
+          outputChannel?.append(stderr);
+        }
 
-      if (error !== null) {
-        outputChannel?.show(true);
-        vscode.window.showErrorMessage(`${label} failed: ${error.message}`);
-        reject(new Error(error.message, { cause: error }));
-        return;
-      }
+        if (error !== null) {
+          outputChannel?.show(true);
+          vscode.window.showErrorMessage(`${label} failed: ${error.message}`);
+          reject(new Error(error.message, { cause: error }));
+          return;
+        }
 
-      vscode.window.showInformationMessage(successMessage);
-      resolve();
-    });
+        vscode.window.showInformationMessage(successMessage);
+        resolve();
+      },
+    );
   });
 }
 
@@ -383,14 +399,7 @@ function redkitCommand(
     };
   }
 
-  const cliProject = path.join(
-    context.extensionPath,
-    "..",
-    "dotnet",
-    "src",
-    "WitcherScript.RedkitTooling.Cli",
-    "WitcherScript.RedkitTooling.Cli.csproj",
-  );
+  const cliProject = bundledRedkitCliProject(context);
 
   return {
     command,
@@ -416,11 +425,12 @@ function languageServerCommand(
   const args = config
     .get<string[]>("languageServer.args", ["run", "witcherscript-lsp"])
     .map((argument) => expandPath(argument, context, workspaceFolder));
-  const cwd = expandPath(
-    config.get<string>("languageServer.cwd", "${extensionPath}/../.."),
+  const configuredCwd = expandPath(
+    config.get<string>("languageServer.cwd", ""),
     context,
     workspaceFolder,
-  );
+  ).trim();
+  const cwd = configuredCwd.length > 0 ? configuredCwd : defaultLanguageServerCwd(context);
 
   return {
     command,
@@ -429,7 +439,50 @@ function languageServerCommand(
   };
 }
 
-function effectiveWorkspaceFolder(context: vscode.ExtensionContext): vscode.WorkspaceFolder | undefined {
+function defaultLanguageServerCwd(context: vscode.ExtensionContext): string {
+  const bundledServer = path.join(context.extensionPath, "server");
+
+  if (pathExists(bundledServer)) {
+    return bundledServer;
+  }
+
+  return path.resolve(context.extensionPath, "..", "..");
+}
+
+function bundledRedkitCliProject(context: vscode.ExtensionContext): string {
+  const bundledProject = path.join(
+    context.extensionPath,
+    "redkit",
+    "src",
+    "WitcherScript.RedkitTooling.Cli",
+    "WitcherScript.RedkitTooling.Cli.csproj",
+  );
+
+  if (pathExists(bundledProject)) {
+    return bundledProject;
+  }
+
+  return path.join(
+    context.extensionPath,
+    "..",
+    "dotnet",
+    "src",
+    "WitcherScript.RedkitTooling.Cli",
+    "WitcherScript.RedkitTooling.Cli.csproj",
+  );
+}
+
+function pathExists(candidate: string): boolean {
+  try {
+    return fs.existsSync(candidate);
+  } catch {
+    return false;
+  }
+}
+
+function effectiveWorkspaceFolder(
+  context: vscode.ExtensionContext,
+): vscode.WorkspaceFolder | undefined {
   const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
   const configuredRoot = expandPath(
     config.get<string>("workspace.root", "${workspaceFolder}"),
@@ -506,7 +559,8 @@ function updateStatus(status: LspStatus, detail?: string): void {
     return;
   }
 
-  const label = detail === undefined ? STATUS_LABELS[status] : `${STATUS_LABELS[status]} (${detail})`;
+  const label =
+    detail === undefined ? STATUS_LABELS[status] : `${STATUS_LABELS[status]} (${detail})`;
   statusBarItem.text = label;
   statusBarItem.tooltip = `WitcherScript Language Server: ${status}`;
   statusBarItem.show();

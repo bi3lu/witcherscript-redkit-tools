@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using WitcherScript.RedkitTooling;
 
@@ -15,7 +16,7 @@ internal static class Program
     {
         if (args is ["--version"] or ["version"])
         {
-            Console.WriteLine("ws-redkit 0.1.0");
+            Console.WriteLine($"ws-redkit {ToolVersion()}");
             return 0;
         }
 
@@ -233,6 +234,14 @@ internal static class Program
               --json
             """
         );
+    }
+
+    private static string ToolVersion()
+    {
+        return typeof(Program).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion
+            ?? "0.0.0";
     }
 
     private sealed record CommandOptions(

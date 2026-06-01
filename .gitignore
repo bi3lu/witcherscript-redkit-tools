@@ -23,7 +23,10 @@ TestResults/
 
 # VS Code extension
 src/vscode/node_modules/
+src/vscode/LICENSE
 src/vscode/out/
+src/vscode/redkit/
+src/vscode/server/
 src/vscode/*.vsix
 
 # IDE

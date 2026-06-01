@@ -6,7 +6,9 @@ from pathlib import Path
 
 import click
 
+from witcherscript_langserver import __version__
 from witcherscript_langserver.corpus import run_corpus
+from witcherscript_langserver.doctor import DoctorReport, run_doctor
 from witcherscript_langserver.parser.parser import parse as parse_source
 
 
@@ -62,9 +64,45 @@ def corpus(paths: tuple[Path, ...], no_semantic: bool) -> None:
 
 
 @main.command()
+@click.option(
+    "--workspace",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=Path("."),
+    help="Workspace root to inspect.",
+)
+@click.option("--json", "json_output", is_flag=True, help="Print the report as JSON.")
+def doctor(workspace: Path, json_output: bool) -> None:
+    """Check the health of a WitcherScript workspace.
+
+    Args:
+        workspace: Workspace root to inspect.
+        json_output: Whether the report should be printed as JSON.
+    """
+    report = run_doctor(workspace)
+
+    if json_output:
+        click.echo(json.dumps(_json_ready(asdict(report)), indent=2, sort_keys=True))
+        raise SystemExit(1 if report.has_errors else 0)
+
+    _print_doctor_report(report)
+    raise SystemExit(1 if report.has_errors else 0)
+
+
+@main.command()
 def version() -> None:
     """Print the CLI version."""
-    click.echo("witcherscript 0.1.0")
+    click.echo(f"witcherscript {__version__}")
+
+
+def _print_doctor_report(report: DoctorReport) -> None:
+    click.echo(f"WitcherScript doctor: {report.workspace}")
+    click.echo(f"Indexed files: {report.indexed_files}")
+    click.echo(f"Diagnostics: {report.diagnostics}")
+    click.echo()
+
+    for check in report.checks:
+        detail = "" if check.detail is None else f" ({check.detail})"
+        click.echo(f"[{check.status.upper()}] {check.name}: {check.message}{detail}")
 
 
 def _json_ready(value: object) -> object:
