@@ -58,6 +58,7 @@ def code_actions(
         elif code in {"WS3002", "WS3003", "WS3004"}:
             suggestion = _closest_symbol_name(index, diagnostic.message)
             word_range = word_range_at_position(source, diagnostic.range.start)
+
             if suggestion is not None and word_range is not None:
                 actions.append(
                     _replace_range_action(
@@ -76,6 +77,7 @@ def code_actions(
 
 def _closest_symbol_name(index: ProjectIndex, message: str) -> str | None:
     quoted = _first_quoted_value(message)
+
     if quoted is None:
         return None
 
@@ -100,10 +102,12 @@ def _closest_symbol_name(index: ProjectIndex, message: str) -> str | None:
 
 def _first_quoted_value(message: str) -> str | None:
     start = message.find("'")
+
     if start == -1:
         return None
 
     end = message.find("'", start + 1)
+
     if end == -1:
         return None
 
