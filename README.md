@@ -18,6 +18,20 @@ The repository is designed around a clear separation of responsibilities:
 language analysis lives in Python, REDkit and Windows process integration lives
 in C#, and editor integration talks to the language server through standard LSP.
 
+## I Just Want To Use This In VS Code
+
+1. Download the latest `.vsix` from
+   [GitHub Releases](https://github.com/bi3lu/witcherscript-redkit-tools/releases).
+2. Install it in VS Code with `Extensions: Install from VSIX...`.
+3. Set your Witcher 3 and REDkit paths in the extension settings.
+4. Open your mod workspace.
+5. Run `WitcherScript: Initialize REDkit Config`.
+
+The extension uses `witcherscript.toml` as the project configuration file. The
+initialize command creates that file for the current workspace, and the language
+server uses it for indexing, diagnostics, completion, hover, definition, and
+REDkit workflow commands.
+
 ## What It Provides
 
 - **WitcherScript language server** with diagnostics, symbol indexing, go to
@@ -57,14 +71,16 @@ in C#, and editor integration talks to the language server through standard LSP.
 │  └─ vscode/                    VS Code language-server client
 ├─ tests/py/                     Python tests, integration fixtures, and snapshots
 ├─ Dockerfile                    Development container image
+├─ CHANGELOG.md                  Release history
 ├─ docker-compose.yml            Container workflow
 ├─ global.json                   .NET SDK pin
 ├─ Makefile                      Common local commands
 ├─ pyproject.toml                Python package and tooling configuration
+├─ VERSION                       Release version source of truth
 └─ uv.lock                       Locked Python dependencies
 ```
 
-## Requirements
+## Contributor Requirements
 
 - Python 3.12
 - [uv](https://docs.astral.sh/uv/)
@@ -76,7 +92,7 @@ REDkit and The Witcher 3 are Windows-native tools. The language server, parser,
 CLI tests, and VS Code extension checks run on macOS, Linux, and Windows. REDkit
 process commands require paths to a real Windows installation.
 
-## Quick Start
+## Contributor Quick Start
 
 Install Python dependencies:
 
@@ -202,6 +218,8 @@ Useful commands:
 
 - `WitcherScript: Refresh Project Index`
 - `WitcherScript: Initialize REDkit Config`
+- `WitcherScript: Recompile Scripts`
+- `WitcherScript: Launch Game`
 - `WitcherScript: Restart Language Server`
 - `WitcherScript: Show Output Logs`
 
@@ -230,7 +248,28 @@ Common shortcuts are available through `make`:
 make sync
 make lint
 make test
+make version-check
 ```
+
+## Versioning
+
+The repository uses [VERSION](VERSION) as the source of truth for release
+metadata. The version is synchronized into Python package metadata, the Python
+runtime package, the VS Code extension package files, and .NET project metadata.
+
+Update the release version with:
+
+```bash
+uv run python scripts/sync_version.py
+```
+
+Check that metadata is synchronized with:
+
+```bash
+uv run python scripts/sync_version.py --check
+```
+
+Release changes are documented in [CHANGELOG.md](CHANGELOG.md).
 
 ## Docker Workflow
 
@@ -258,8 +297,11 @@ Containers, and Windows path mounts.
 ## Documentation
 
 - [Architecture](docs/architecture.md)
+- [Changelog](CHANGELOG.md)
+- [Contributing](.github/CONTRIBUTING.md)
 - [Language Server Features](docs/lsp-features.md)
 - [REDkit Project Model](docs/redkit-project-model.md)
+- [Security Policy](.github/SECURITY.md)
 - [WitcherScript Language Notes](docs/witcherscript-notes.md)
 - [Corpus Testing](docs/corpus.md)
 - [VS Code Extension](docs/vscode-extension.md)

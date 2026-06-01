@@ -1,0 +1,40 @@
+name: VS Code extension issue
+description: Report activation, LSP startup, commands, or editor behavior problems.
+title: "[VS Code]: "
+labels: ["bug", "vscode"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: WitcherScript output channel
+      description: Use `WitcherScript: Show Output Logs` and paste the relevant lines.
+      render: text
+  - type: textarea
+    id: settings
+    attributes:
+      label: Relevant VS Code settings
+      render: json
+  - type: input
+    id: vscode_version
+    attributes:
+      label: VS Code version
+    validations:
+      required: true
+  - type: input
+    id: extension_version
+    attributes:
+      label: Extension version
+    validations:
+      required: true

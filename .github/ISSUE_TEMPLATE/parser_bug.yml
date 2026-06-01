@@ -1,0 +1,30 @@
+name: Parser bug
+description: Report WitcherScript syntax that is parsed incorrectly.
+title: "[Parser]: "
+labels: ["bug", "parser"]
+body:
+  - type: textarea
+    id: snippet
+    attributes:
+      label: Minimal WitcherScript snippet
+      description: Provide the smallest `.ws` snippet that reproduces the parser issue.
+      render: witcherscript
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Current diagnostics or AST output
+      description: Paste `uv run witcherscript parse path/to/file.ws` output when possible.
+      render: json
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected parser behavior
+    validations:
+      required: true
+  - type: textarea
+    id: source_context
+    attributes:
+      label: Source context
+      description: Is this from vanilla scripts, REDkit samples, or a mod project?

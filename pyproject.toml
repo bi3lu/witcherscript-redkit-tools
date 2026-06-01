@@ -1,6 +1,6 @@
 [project]
 name = "witcherscript-langserver"
-version = "0.1.0"
+version = "0.3.0"
 description = "WitcherScript Language Server and REDkit tooling integration"
 readme = "README.md"
 requires-python = ">=3.12"

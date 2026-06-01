@@ -6,6 +6,7 @@ from pathlib import Path
 
 import click
 
+from witcherscript_langserver import __version__
 from witcherscript_langserver.corpus import run_corpus
 from witcherscript_langserver.parser.parser import parse as parse_source
 
@@ -64,7 +65,7 @@ def corpus(paths: tuple[Path, ...], no_semantic: bool) -> None:
 @main.command()
 def version() -> None:
     """Print the CLI version."""
-    click.echo("witcherscript 0.1.0")
+    click.echo(f"witcherscript {__version__}")
 
 
 def _json_ready(value: object) -> object:

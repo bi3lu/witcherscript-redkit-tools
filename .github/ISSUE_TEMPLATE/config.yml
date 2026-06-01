@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Project documentation
+    url: https://github.com/bi3lu/witcherscript-redkit-tools/tree/develop/docs
+    about: Check the documentation before opening an issue.

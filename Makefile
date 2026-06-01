@@ -1,4 +1,4 @@
-.PHONY: sync lint format test test-py test-dotnet vscode-compile vscode-check vscode-lint docker-build docker-shell docker-lint docker-test
+.PHONY: sync lint format test test-py test-dotnet version-check vscode-compile vscode-check vscode-lint docker-build docker-shell docker-lint docker-test
 
 sync:
 	uv sync --all-extras --dev
@@ -20,6 +20,9 @@ test-py:
 
 test-dotnet:
 	dotnet test src/dotnet/WitcherScript.RedkitTooling.sln
+
+version-check:
+	uv run python scripts/sync_version.py --check
 
 vscode-compile:
 	npm --prefix src/vscode run compile
