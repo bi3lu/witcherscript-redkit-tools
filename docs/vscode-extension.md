@@ -11,6 +11,7 @@ The VS Code extension under `src/vscode` is a lightweight client for exercising 
   variables, parameters, built-in types, events, native symbols, and deprecated
   symbols.
 - Shows LSP status in the VS Code status bar.
+- Exposes `WitcherScript: Doctor Setup`.
 - Exposes `WitcherScript: Show Output Logs`.
 - Exposes `WitcherScript: Refresh Project Index`.
 - Exposes `WitcherScript: Initialize REDkit Config`.
@@ -63,14 +64,34 @@ Set `witcherscript.languageServer.path` to a concrete executable when you do not
 
 The status bar item opens the WitcherScript output channel. Startup failures also offer actions for opening logs or the language server settings.
 
+## Setup Doctor
+
+`WitcherScript: Doctor Setup` runs a local setup checklist without requiring the
+language server to be healthy first. It reports to the WitcherScript output
+channel and checks:
+
+- open workspace folder
+- `witcherscript.toml`
+- `uv`
+- bundled Python CLI environment
+- .NET SDK
+- REDkit CLI command
+- current LSP state
+- Witcher 3, REDkit, project, source root, and vanilla root paths
+- recompile executable setting
+
+Use it as the first command after installing the `.vsix` or when the extension
+does not start cleanly.
+
 ## Daily Debugging Workflow
 
 1. Open `src/vscode` in VS Code.
 2. Run `npm install` and `npm run compile`.
 3. Start `Run WitcherScript Extension`.
-4. Use the debug host status bar item to inspect LSP state.
-5. Run `WitcherScript: Restart Language Server` after Python or configuration changes.
-6. Run `WitcherScript: Refresh Project Index` after external file changes.
+4. Run `WitcherScript: Doctor Setup` to inspect local setup.
+5. Use the debug host status bar item to inspect LSP state.
+6. Run `WitcherScript: Restart Language Server` after Python or configuration changes.
+7. Run `WitcherScript: Refresh Project Index` after external file changes.
 
 ## REDkit Tooling Settings
 

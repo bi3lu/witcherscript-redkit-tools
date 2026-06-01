@@ -23,17 +23,17 @@ in C#, and editor integration talks to the language server through standard LSP.
 1. Download the latest `.vsix` from
    [GitHub Releases](https://github.com/bi3lu/witcherscript-redkit-tools/releases).
 2. Install it in VS Code with `Extensions: Install from VSIX...`.
-3. Make sure `uv` and the .NET SDK are available on `PATH`; the packaged
-   extension includes the language server and REDkit CLI sources and runs them
-   locally.
-4. Open your mod workspace.
+3. Open your mod workspace.
+4. Run `WitcherScript: Doctor Setup`.
 5. Run `WitcherScript: Initialize REDkit Config`.
 6. Set Witcher 3 / REDkit paths if the generated config does not detect them.
 
 The extension uses `witcherscript.toml` as the project configuration file. The
 initialize command creates that file for the current workspace, and the language
 server uses it for indexing, diagnostics, completion, hover, definition, and
-REDkit workflow commands.
+REDkit workflow commands. `Doctor Setup` checks the local toolchain, bundled
+language server environment, REDkit CLI, project config, and configured paths,
+then writes a setup checklist to the WitcherScript output panel.
 
 ## What It Provides
 
@@ -44,8 +44,9 @@ REDkit workflow commands.
   WitcherScript corpora.
 - **REDkit tooling CLI** for project detection, `witcherscript.toml` generation,
   validation, script recompilation adapters, and game launch adapters.
-- **VS Code extension harness** for daily language-server testing with status
-  feedback, output logs, restart support, and REDkit config initialization.
+- **VS Code extension harness** for daily language-server testing with setup
+  doctor, status feedback, output logs, restart support, and REDkit config
+  initialization.
 - **Portable development workflow** through `uv`, .NET SDK pinning, Docker,
   Dev Containers, GitHub Actions, and reproducible test fixtures.
 
@@ -61,7 +62,7 @@ REDkit workflow commands.
 | Type-aware completion | Type positions, `extends`, local scope, member access, keyword filtering, import suggestions |
 | Corpus tooling | Multi-file corpus scans, diagnostics summaries, parser coverage reporting, timing measurements |
 | REDkit tooling | Project detection, content repositories, config export, validation, recompile and launch process adapters |
-| VS Code client | `.ws` activation, configurable LSP startup, status bar, output panel, restart and REDkit init commands |
+| VS Code client | `.ws` activation, setup doctor, configurable LSP startup, status bar, output panel, restart and REDkit init commands |
 
 ## Repository Layout
 
@@ -223,6 +224,7 @@ configuration, and open a `.ws` file in the Extension Development Host.
 
 Useful commands:
 
+- `WitcherScript: Doctor Setup`
 - `WitcherScript: Refresh Project Index`
 - `WitcherScript: Initialize REDkit Config`
 - `WitcherScript: Recompile Scripts`
