@@ -17,6 +17,7 @@ from .hover import hover
 from .implementation import implementations, inheritance_tree
 from .references import references
 from .rename import prepare_rename, rename_symbol
+from .semantic_tokens import SEMANTIC_TOKENS_LEGEND, semantic_tokens
 from .signature_help import signature_help
 from .symbols import document_symbols, workspace_symbols
 
@@ -415,6 +416,27 @@ def register_features(server: WitcherScriptLanguageServer) -> None:
             normalize_file_uri(uri),
             params.position,
         )
+
+    @server.feature(
+        types.TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
+        types.SemanticTokensOptions(legend=SEMANTIC_TOKENS_LEGEND, full=True),
+    )
+    def semantic_tokens_full(
+        ls: WitcherScriptLanguageServer,
+        params: types.SemanticTokensParams,
+    ) -> types.SemanticTokens:
+        """Return semantic tokens for syntax highlighting.
+
+        Args:
+            ls: Active WitcherScript language server instance.
+            params: Semantic token request parameters.
+
+        Returns:
+            Full-document semantic tokens.
+        """
+        uri = params.text_document.uri
+        normalized_uri = normalize_file_uri(uri)
+        return semantic_tokens(ls.workspace_state.index, normalized_uri)
 
     @server.feature(types.TEXT_DOCUMENT_HOVER)
     def hover_info(
