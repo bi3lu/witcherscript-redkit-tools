@@ -59,6 +59,40 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "semanticTokenTypes": [
+      {
+        "id": "event",
+        "description": "WitcherScript event declaration or reference."
+      }
+    ],
+    "semanticTokenModifiers": [
+      {
+        "id": "native",
+        "description": "Native WitcherScript symbol."
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "language": "witcherscript",
+        "scopes": {
+          "event": [
+            "entity.name.function.event.witcherscript"
+          ],
+          "*.native": [
+            "support.function.native.witcherscript",
+            "support.type.native.witcherscript"
+          ],
+          "*.deprecated": [
+            "invalid.deprecated.witcherscript"
+          ]
+        }
+      }
+    ],
+    "configurationDefaults": {
+      "[witcherscript]": {
+        "editor.semanticHighlighting.enabled": true
+      }
+    },
     "commands": [
       {
         "command": "witcherscript.refreshIndex",

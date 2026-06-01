@@ -7,6 +7,9 @@ The VS Code extension under `src/vscode` is a lightweight client for exercising 
 - Activates for `.ws` files through the `witcherscript` language id.
 - Starts the Python language server over standard input and output.
 - Watches `.ws` files and `witcherscript.toml` for workspace changes.
+- Enables semantic highlighting for classes, functions, methods, fields, local
+  variables, parameters, built-in types, events, native symbols, and deprecated
+  symbols.
 - Shows LSP status in the VS Code status bar.
 - Exposes `WitcherScript: Show Output Logs`.
 - Exposes `WitcherScript: Refresh Project Index`.

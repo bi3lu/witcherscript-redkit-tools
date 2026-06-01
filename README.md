@@ -37,8 +37,9 @@ REDkit workflow commands.
 
 ## What It Provides
 
-- **WitcherScript language server** with diagnostics, symbol indexing, go to
-  definition, hover, references, completion, signature help, and semantic checks.
+- **WitcherScript language server** with diagnostics, semantic highlighting,
+  symbol indexing, go to definition, hover, references, completion, signature
+  help, and semantic checks.
 - **Developer CLI** for parsing `.ws` files and running diagnostics across
   WitcherScript corpora.
 - **REDkit tooling CLI** for project detection, `witcherscript.toml` generation,
@@ -56,7 +57,7 @@ REDkit workflow commands.
 | Diagnostics | Lexer, parser, semantic, project, type, member, call, inheritance, duplicate symbol, and import diagnostics |
 | Workspace model | `witcherscript.toml`, source roots, vanilla roots, exclude rules, file watching, refresh command |
 | Symbol intelligence | Global symbols, per-file symbols, scope lookup, local variables, parameters, members, inheritance lookup |
-| Editor features | Document symbols, workspace symbols, definition, implementation, hover, completion, code actions, references, rename, signature help |
+| Editor features | Document symbols, workspace symbols, definition, implementation, hover, completion, code actions, references, rename, signature help, semantic highlighting |
 | Type-aware completion | Type positions, `extends`, local scope, member access, keyword filtering, import suggestions |
 | Corpus tooling | Multi-file corpus scans, diagnostics summaries, parser coverage reporting, timing measurements |
 | REDkit tooling | Project detection, content repositories, config export, validation, recompile and launch process adapters |

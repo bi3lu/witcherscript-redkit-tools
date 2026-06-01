@@ -33,6 +33,7 @@ def test_server_registers_minimal_lsp_features() -> None:
     assert types.TEXT_DOCUMENT_PREPARE_RENAME in features
     assert types.TEXT_DOCUMENT_RENAME in features
     assert types.TEXT_DOCUMENT_SIGNATURE_HELP in features
+    assert types.TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL in features
     assert types.TEXT_DOCUMENT_HOVER in features
     assert types.TEXT_DOCUMENT_REFERENCES in features
 

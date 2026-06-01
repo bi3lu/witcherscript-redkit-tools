@@ -130,6 +130,38 @@ Completion items include:
 
 Completion item kinds are mapped to LSP classes, functions, fields, variables, events, and keywords.
 
+## Semantic Tokens
+
+Supported request:
+
+- `textDocument/semanticTokens/full`
+
+The server provides full-document semantic tokens for richer editor coloring.
+Tokens are derived from the indexed AST, the project symbol table, type
+references, and the name resolver.
+
+Supported token categories:
+
+- classes
+- functions
+- methods
+- fields
+- local variables
+- parameters
+- built-in types
+- events
+
+Supported modifiers:
+
+- declarations
+- built-in/default-library symbols
+- native symbols
+- deprecated symbols
+
+The VS Code extension enables semantic highlighting for WitcherScript files by
+default and contributes WitcherScript-specific scopes for events and native
+symbols.
+
 ## Hover
 
 Supported request:
